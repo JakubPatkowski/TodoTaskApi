@@ -8,7 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TodoTaskAPI.Core\TodoTaskAPI.Core.csproj" />
+    <ProjectReference Include="..\TodoTaskAPI.Infrastructure\TodoTaskAPI.Infrastructure.csproj" />
+    <ProjectReference Include="..\TodoTaskAPI.Application\TodoTaskAPI.Application.csproj" />
   </ItemGroup>
 
 </Project>
