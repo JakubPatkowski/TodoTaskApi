@@ -9,6 +9,7 @@ namespace TodoTaskAPI.Core.Interfaces
 {
     public interface ITodoRepository
     {
-        Task<IEnumerable<Todo>> GetAllAsync();
+        // Return Touple of Enumerated List of Todos and List size
+        Task<(IEnumerable<Todo> Items, int TotalCount)> GetAllAsync(int  pageIndex, int pageSize);
     }
-          }
+}

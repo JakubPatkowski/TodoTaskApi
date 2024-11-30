@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TodoTaskAPI.Application.DTOs
 {
+    // Todo response DTO
     public class TodoDto
     {
         public Guid Id { get; set; }
