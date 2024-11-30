@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TodoTaskAPI.Core.Entities
 {
+    // Todo Entity
     public class Todo
     {
         public Guid Id { get; set; }

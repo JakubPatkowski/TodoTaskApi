@@ -10,5 +10,5 @@ namespace TodoTaskAPI.Application.Interfaces;
 
 public interface ITodoService
 {
-    Task<IEnumerable<TodoDto>> GetAllTodosAsync();
+    Task<PaginatedResponseDto<TodoDto>> GetAllTodosAsync(PaginationParametersDto paginationParameters);
 }

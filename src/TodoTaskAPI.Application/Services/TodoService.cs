@@ -19,11 +19,14 @@ public class TodoService : ITodoService
         _todoRepository = todoRepository;
     }
 
-    public async Task<IEnumerable<TodoDto>> GetAllTodosAsync()
+    // returns paginated response with paginated List of Todos
+    public async Task<PaginatedResponseDto<TodoDto>> GetAllTodosAsync(PaginationParametersDto paginationParameters)
     {
-        var todos = await _todoRepository.GetAllAsync();
+        var (todos, totalCount) = await _todoRepository.GetAllAsync(paginationParameters.PageNumber, paginationParameters.PageSize);
 
-        return todos.Select(todo => new TodoDto
+        var totalPages = (int)Math.Ceiling(totalCount / (double)paginationParameters.PageSize);
+
+        var todoDtos = todos.Select(todo => new TodoDto
         {
             Id = todo.Id,
             Title = todo.Title,
@@ -33,6 +36,17 @@ public class TodoService : ITodoService
             IsDone = todo.IsDone,
             CreatedAt = todo.CreatedAt,
             UpdatedAt = todo.UpdatedAt, 
-        });
+        });                                
+
+        return new PaginatedResponseDto<TodoDto>
+        {
+            Items = todoDtos,
+            PageNumber = paginationParameters.PageNumber,
+            PageSize = paginationParameters.PageSize,
+            TotalPages = totalPages,
+            TotalCount = totalCount,
+            HasNextPage = paginationParameters.PageNumber < totalPages,
+            HasPreviousPage = paginationParameters.PageNumber > 1
+        };
     }
 }
