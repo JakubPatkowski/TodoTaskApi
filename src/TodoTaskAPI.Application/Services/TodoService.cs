@@ -6,47 +6,79 @@ using System.Threading.Tasks;
 using TodoTaskAPI.Application.DTOs;
 using TodoTaskAPI.Application.Interfaces;
 using TodoTaskAPI.Core.Entities;
+using TodoTaskAPI.Core.Exceptions;
 using TodoTaskAPI.Core.Interfaces;
 
 namespace TodoTaskAPI.Application.Services;
 
+/// <summary>
+/// Service implementation for Todo operations
+/// </summary>
 public class TodoService : ITodoService
 {
     private readonly ITodoRepository _todoRepository;
 
+    /// <summary>
+    /// Initializes a new instance of TodoService
+    /// </summary>
+    /// <param name="todoRepository">Todo repository</param>
     public TodoService(ITodoRepository todoRepository)
     {
         _todoRepository = todoRepository;
     }
 
-    // returns paginated response with paginated List of Todos
-    public async Task<PaginatedResponseDto<TodoDto>> GetAllTodosAsync(PaginationParametersDto paginationParameters)
+    /// <inheritdoc/>
+    public async Task<IEnumerable<TodoDto>> GetAllTodosAsync()
     {
-        var (todos, totalCount) = await _todoRepository.GetAllAsync(paginationParameters.PageNumber, paginationParameters.PageSize);
+        var todos = await _todoRepository.GetAllAsync();
+        return todos.Select(MapToDto);
+    }
 
-        var totalPages = (int)Math.Ceiling(totalCount / (double)paginationParameters.PageSize);
-
-        var todoDtos = todos.Select(todo => new TodoDto
+    /// <inheritdoc/>
+    public async Task<PaginatedResponseDto<TodoDto>> GetAllTodosWithPaginationAsync(PaginationParametersDto parameters)
+    {
+        // Validate parameters are not null
+        if (!parameters.PageNumber.HasValue || !parameters.PageSize.HasValue)
         {
-            Id = todo.Id,
-            Title = todo.Title,
-            Description = todo.Description,
-            ExpiryDateTime = todo.ExpiryDateTime,
-            PercentComplete = todo.PercentComplete,
-            IsDone = todo.IsDone,
-            CreatedAt = todo.CreatedAt,
-            UpdatedAt = todo.UpdatedAt, 
-        });                                
+            throw new ValidationException("Pagination parameters cannot be null");
+        }
 
+        // Get data from repository
+        var (todos, totalCount) = await _todoRepository.GetAllWithPaginationAsync(
+            parameters.PageNumber.Value,
+            parameters.PageSize.Value
+        );
+
+        // Calculate total pages
+        var totalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize.Value);
+
+
+
+        // Create and return paginated response
         return new PaginatedResponseDto<TodoDto>
         {
-            Items = todoDtos,
-            PageNumber = paginationParameters.PageNumber,
-            PageSize = paginationParameters.PageSize,
+            Items = todos.Select(MapToDto),
+            PageNumber = parameters.PageNumber.Value,
+            PageSize = parameters.PageSize.Value,
             TotalPages = totalPages,
             TotalCount = totalCount,
-            HasNextPage = paginationParameters.PageNumber < totalPages,
-            HasPreviousPage = paginationParameters.PageNumber > 1
+            HasNextPage = parameters.PageNumber < totalPages,
+            HasPreviousPage = parameters.PageNumber > 1
         };
     }
+
+    /// <summary>
+    /// Maps Todo entity to TodoDto
+    /// </summary>
+    private static TodoDto MapToDto(Todo todo) => new()
+    {
+        Id = todo.Id,
+        Title = todo.Title,
+        Description = todo.Description,
+        ExpiryDateTime = todo.ExpiryDateTime,
+        PercentComplete = todo.PercentComplete,
+        IsDone = todo.IsDone,
+        CreatedAt = todo.CreatedAt,
+        UpdatedAt = todo.UpdatedAt
+    };
 }

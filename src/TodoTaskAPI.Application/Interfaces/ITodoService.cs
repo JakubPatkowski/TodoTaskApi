@@ -8,7 +8,21 @@ using TodoTaskAPI.Application.DTOs;
 
 namespace TodoTaskAPI.Application.Interfaces;
 
+/// <summary>
+/// Interface for Todo service operations
+/// </summary>
 public interface ITodoService
 {
-    Task<PaginatedResponseDto<TodoDto>> GetAllTodosAsync(PaginationParametersDto paginationParameters);
+    /// <summary>
+    /// Gets all todos without pagination
+    /// </summary>
+    /// <returns>Collection of todo DTOs</returns>
+    Task<IEnumerable<TodoDto>> GetAllTodosAsync();
+
+    /// <summary>
+    /// Gets paginated todos
+    /// </summary>
+    /// <param name="parameters">Pagination parameters</param>
+    /// <returns>Paginated response with todo DTOs</returns>
+    Task<PaginatedResponseDto<TodoDto>> GetAllTodosWithPaginationAsync(PaginationParametersDto parameters);
 }

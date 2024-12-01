@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TodoTaskAPI.API</name>
+    </assembly>
+    <members>
+        <member name="M:TodosController.#ctor(TodoTaskAPI.Application.Interfaces.ITodoService,Microsoft.Extensions.Logging.ILogger{TodosController})">
+            <summary>
+            Initializes a new instance of the TodosController
+            </summary>
+        </member>
+        <member name="M:TodosController.GetAll(System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Retrieves todos with optional pagination
+            </summary>
+            <remarks>
+            Sample requests:
+            GET /api/todos - Returns all todos
+            GET /api/todos?pageNumber=1&amp;pageSize=10 - Returns first page with 10 items
+            </remarks>
+            <param name="pageNumber">Optional page number (minimum: 1)</param>
+            <param name="pageSize">Optional page size (minimum: 1, maximum: 50)</param>
+            <returns>List of todos, either paginated or complete</returns>
+            <response code="200">Successfully retrieved todos</response>
+            <response code="400">Invalid pagination parameters</response>
+            <response code="500">Internal server error</response>
+        </member>
+        <member name="T:TodoTaskAPI.API.Swagger.EnumSchemaFilter">
+            <summary>
+            Custom schema filter to properly display enums in Swagger
+            </summary>
+        </member>
+    </members>
+</doc>
