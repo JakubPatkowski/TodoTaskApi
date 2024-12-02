@@ -30,7 +30,7 @@ namespace TodoTaskAPI.Application.DTOs
         /// <summary>
         /// Response message
         /// </summary>
-        public string Message { get; set; }
+        public string? Message { get; set; }
 
         /// <summary>
         /// Optional response data

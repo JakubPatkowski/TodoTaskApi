@@ -31,7 +31,7 @@ namespace TodoTaskAPI.Application.DTOs
             {
                 if (value.HasValue && value < MinPageNumber)
                 {
-                    throw new ValidationException($"Page number must be greater than or equal to {MinPageNumber}");
+                    throw new TodoTaskAPI.Core.Exceptions.ValidationException($"Page number must be greater than or equal to {MinPageNumber}");
                 }
                 _pageNumber = value;
             }
@@ -49,11 +49,11 @@ namespace TodoTaskAPI.Application.DTOs
                 {
                     if (value < MinPageSize)
                     {
-                        throw new ValidationException($"Page size must be greater than or equal to {MinPageSize}");
+                        throw new TodoTaskAPI.Core.Exceptions.ValidationException($"Page size must be greater than or equal to {MinPageSize}");
                     }
                     if (value > MaxPageSize)
                     {
-                        throw new ValidationException($"Page size cannot be greater than {MaxPageSize}");
+                        throw new TodoTaskAPI.Core.Exceptions.ValidationException($"Page size cannot be greater than {MaxPageSize}");
                     }
                 }
                 _pageSize = value;
@@ -67,7 +67,7 @@ namespace TodoTaskAPI.Application.DTOs
         {
             if (PageNumber.HasValue ^ PageSize.HasValue) // XOR operator
             {
-                throw new ValidationException("Both pageNumber and pageSize must be provided together for pagination");
+                throw new TodoTaskAPI.Core.Exceptions.ValidationException("Both pageNumber and pageSize must be provided together for pagination");
             }
         }
     }

@@ -22,8 +22,8 @@
         private readonly object _lock = new();
 
         // Configuration values
-        private const int MaxBucketTokens = 50;       // Maximum 50 concurrent requests
-        private const int TokensPerInterval = 20;     // 20 requests per interval
+        private const int MaxBucketTokens = 10;       // Maximum 10 concurrent requests
+        private const int TokensPerInterval = 5;     // 5 requests per interval
         private const int IntervalSeconds = 1;        // 1 second interval
         private const int MaxWaitTimeMs = 1000;       // 1 second maximum wait     
 

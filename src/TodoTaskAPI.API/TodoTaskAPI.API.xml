@@ -8,22 +8,120 @@
             <summary>
             Initializes a new instance of the TodosController
             </summary>
+            <param name="todoService">Todo service instance</param>
+            <param name="logger">Logger instance</param>
         </member>
         <member name="M:TodosController.GetAll(System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
-            Retrieves todos with optional pagination
+            Retrieves todos with optional pagination sorted by expiry date
             </summary>
             <remarks>
             Sample requests:
-            GET /api/todos - Returns all todos
+            
+            GET /api/todos - Returns all todos, 
+            
             GET /api/todos?pageNumber=1&amp;pageSize=10 - Returns first page with 10 items
             </remarks>
             <param name="pageNumber">Optional page number (minimum: 1)</param>
-            <param name="pageSize">Optional page size (minimum: 1, maximum: 50)</param>
-            <returns>List of todos, either paginated or complete</returns>
+            <param name="pageSize">Optional page size (minimum: 1, maximum: 100)</param>
+            <returns>Standardized API response containin list of todos, either paginated or complete</returns>
             <response code="200">Successfully retrieved todos</response>
+            <response code="200">Successfully retrieved paginated todos</response>
             <response code="400">Invalid pagination parameters</response>
+            <response code="429">Too many requests - rate limit exceeded</response>
             <response code="500">Internal server error</response>
+        </member>
+        <member name="T:TodoTaskAPI.API.Middleware.RateLimitingMiddleware">
+            <summary>
+            Middleware that implements token bucket algorithm for API rate limiting.
+            Restricts the number of requests a client can make within a specified time interval.
+            </summary>
+            <remarks>
+            Configuration parameters:
+            - MaxBucketTokens: Maximum number of tokens a client can accumulate
+            - TokensPerInterval: Number of tokens added per interval
+            - IntervalSeconds: Time interval for token replenishment
+            - MaxWaitTimeMs: Maximum time to wait for a token
+            
+            Rate limiting is applied per client IP address.
+            When limit is exceeded, returns HTTP 429 (Too Many Requests).
+            </remarks>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILogger{TodoTaskAPI.API.Middleware.RateLimitingMiddleware})">
+            <summary>
+            Constructor for the rate limiting middleware.
+            </summary>
+            <param name="next">The next middleware in the pipeline.</param>
+            <param name="logger">Logger for recording middleware activity.</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Processes an HTTP request applying rate limiting rules
+            </summary>
+            <param name="context">The HTTP context</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.GetClientIdentifier(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Generates a unique identifier for the client based on their IP address.
+            </summary>
+            <param name="context">The HTTP context for the current request.</param>
+            <returns>A string representing the client identifier.</returns>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.GetBucket(System.String)">
+            <summary>
+            Retrieves or creates a token bucket for the specified client.
+            </summary>
+            <param name="clientId">The unique identifier of the client.</param>
+            <returns>The token bucket associated with the client.</returns>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.LogBucketState(System.String)">
+            <summary>
+            Logs the state of the token bucket for the specified client.
+            </summary>
+            <param name="clientId">The unique identifier of the client.</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.TryAcquireTokenAsync(System.String)">
+            <summary>
+            Attempts to acquire a token from the client's token bucket.
+            </summary>
+            <param name="clientId">The unique identifier of the client.</param>
+            <returns>True if a token is acquired successfully, otherwise false.</returns>
+        </member>
+        <member name="T:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.TokenBucket">
+            <summary>
+            Implements a token bucket algorithm for rate limiting
+            </summary>
+        </member>
+        <member name="P:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.TokenBucket.CurrentTokens">
+            <summary>
+            Gets the current number of tokens in the bucket.
+            </summary>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.TokenBucket.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Initializes a new instance of the TokenBucket class.
+            </summary>
+            <param name="maxTokens">Maximum tokens the bucket can hold.</param>
+            <param name="tokensPerInterval">Tokens added per interval.</param>
+            <param name="intervalSeconds">Time interval for replenishment in seconds.</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.TokenBucket.GetStatus">
+            <summary>
+            Returns the current status of the token bucket as a string.
+            </summary>
+            <returns>A string representing the current status of the bucket.</returns>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.TokenBucket.TryAcquireAsync(System.Int32)">
+            <summary>
+            Attempts to acquire a token from the bucket.
+            </summary>
+            <param name="maxWaitTimeMs">Maximum time to wait for a token in milliseconds.</param>
+            <returns>True if a token is acquired successfully, otherwise false.</returns>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RateLimitingMiddleware.TokenBucket.RefillTokens">
+            <summary>
+            Refills the bucket with tokens based on the elapsed time.
+            </summary>
         </member>
         <member name="T:TodoTaskAPI.API.Swagger.EnumSchemaFilter">
             <summary>

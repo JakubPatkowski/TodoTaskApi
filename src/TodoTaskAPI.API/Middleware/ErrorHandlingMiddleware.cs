@@ -19,7 +19,7 @@ namespace TodoTaskAPI.API.Middleware
             {
                 await _next(context);
             }
-            catch (ValidationException ex)
+            catch (TodoTaskAPI.Core.Exceptions.ValidationException ex)
             {
                 _logger.LogWarning(ex, "Validation error occurred");
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;

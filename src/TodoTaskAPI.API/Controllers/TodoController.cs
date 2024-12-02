@@ -94,12 +94,19 @@ public class TodosController : ControllerBase
                 paginatedTodos,
                 "Successfully retrieved paginated todos"));
         }
-        catch (ValidationException ex)
+        catch (System.ComponentModel.DataAnnotations.ValidationException ex)
         {
             _logger.LogWarning(ex, "Validation error in GetAll endpoint");
             return BadRequest(ApiResponseDto<object>.Failure(
                StatusCodes.Status400BadRequest,
                ex.Message));
+        }
+        catch (TodoTaskAPI.Core.Exceptions.ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error in GetAll endpoint");
+            return BadRequest(ApiResponseDto<object>.Failure(
+                StatusCodes.Status400BadRequest,
+                ex.Message));
         }
         catch (Exception ex)
         {
