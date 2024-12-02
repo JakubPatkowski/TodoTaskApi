@@ -7,9 +7,24 @@ using TodoTaskAPI.Core.Entities;
 
 namespace TodoTaskAPI.Core.Interfaces
 {
+    /// <summary>
+    /// Interface defining operations for Todo repository
+    /// </summary>
     public interface ITodoRepository
     {
-        // Return Touple of Enumerated List of Todos and List size
-        Task<(IEnumerable<Todo> Items, int TotalCount)> GetAllAsync(int  pageIndex, int pageSize);
+        /// <summary>
+        /// Gets all todos without pagination
+        /// </summary>
+        /// <returns>Collection of todos</returns>
+        Task<IEnumerable<Todo>> GetAllAsync();
+
+        /// <summary>
+        /// Gets paginated todos with total count
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-based)</param>
+        /// <param name="pageSize">Items per page</param>
+        /// <returns>Tuple containing paginated items and total count</returns>
+        Task<(IEnumerable<Todo> Items, int TotalCount)> GetAllWithPaginationAsync(int pageNumber, int pageSize);
     }
 }
+
