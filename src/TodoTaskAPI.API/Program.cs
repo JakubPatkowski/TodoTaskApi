@@ -80,6 +80,8 @@ var app = builder.Build();
 
 
 // Configure middleware
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<RateLimitingMiddleware>();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseSwagger();

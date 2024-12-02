@@ -5,27 +5,24 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F9DCDD9C-0ABD-415B-B193-711F8952F8C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTaskAPI.API", "src\TodoTaskAPI.API\TodoTaskAPI.API.csproj", "{1EA1DA87-347F-4544-A34B-CEFCE0930008}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.API", "src\TodoTaskAPI.API\TodoTaskAPI.API.csproj", "{1EA1DA87-347F-4544-A34B-CEFCE0930008}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTaskAPI.Core", "src\TodoTaskAPI.Core\TodoTaskAPI.Core.csproj", "{E41ADB04-9463-45A4-A573-BB32849D6664}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.Core", "src\TodoTaskAPI.Core\TodoTaskAPI.Core.csproj", "{E41ADB04-9463-45A4-A573-BB32849D6664}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTaskAPI.Infrastructure", "src\TodoTaskAPI.Infrastructure\TodoTaskAPI.Infrastructure.csproj", "{A2ECE2D1-4B35-491A-9F6C-0450C82D49C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.Infrastructure", "src\TodoTaskAPI.Infrastructure\TodoTaskAPI.Infrastructure.csproj", "{A2ECE2D1-4B35-491A-9F6C-0450C82D49C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTaskAPI.Application", "src\TodoTaskAPI.Application\TodoTaskAPI.Application.csproj", "{489D9BBE-067F-4EA0-BE42-16F5723C4154}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.Application", "src\TodoTaskAPI.Application\TodoTaskAPI.Application.csproj", "{489D9BBE-067F-4EA0-BE42-16F5723C4154}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E96B0648-895D-4137-A5AB-60BF8EA501F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTaskAPI.UnitTests", "tests\TodoTaskAPI.UnitTests\TodoTaskAPI.UnitTests.csproj", "{A7F6FA0D-8DA0-488A-8C7B-8CCBAB540420}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.UnitTests", "tests\TodoTaskAPI.UnitTests\TodoTaskAPI.UnitTests.csproj", "{A7F6FA0D-8DA0-488A-8C7B-8CCBAB540420}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoTaskAPI.IntegrationTests", "tests\TodoTaskAPI.IntegrationTests\TodoTaskAPI.IntegrationTests.csproj", "{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.IntegrationTests", "tests\TodoTaskAPI.IntegrationTests\TodoTaskAPI.IntegrationTests.csproj", "{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1EA1DA87-347F-4544-A34B-CEFCE0930008}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -52,6 +49,9 @@ Global
 		{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1EA1DA87-347F-4544-A34B-CEFCE0930008} = {F9DCDD9C-0ABD-415B-B193-711F8952F8C4}

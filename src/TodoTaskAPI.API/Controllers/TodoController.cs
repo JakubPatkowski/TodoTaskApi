@@ -41,11 +41,13 @@ public class TodosController : ControllerBase
     /// <response code="200">Successfully retrieved todos</response>
     /// <response code="200">Successfully retrieved paginated todos</response>
     /// <response code="400">Invalid pagination parameters</response>
+    /// <response code="429">Too many requests - rate limit exceeded</response>
     /// <response code="500">Internal server error</response>
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponseDto<IEnumerable<TodoDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponseDto<PaginatedResponseDto<TodoDto>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status429TooManyRequests)]
     [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponseDto<object>>> GetAll(
         [FromQuery] int? pageNumber = null,
