@@ -26,6 +26,15 @@ public interface ITodoService
     /// <returns>Paginated response with todo DTOs</returns>
     Task<PaginatedResponseDto<TodoDto>> GetAllTodosWithPaginationAsync(PaginationParametersDto parameters);
 
+    // src/TodoTaskAPI.Application/Interfaces/ITodoService.cs
+    // Add this method to the interface
+    /// <summary>
+    /// Finds specific todos based on search parameters
+    /// </summary>
+    /// <param name="parameters">Search parameters</param>
+    /// <returns>Collection of matching todo DTOs</returns>
+    Task<IEnumerable<TodoDto>> FindTodosAsync(TodoSearchParametersDto parameters);
+
     /// <summary>
     /// Creates a new todo item
     /// </summary>

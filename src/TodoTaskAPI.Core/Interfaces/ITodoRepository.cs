@@ -27,6 +27,14 @@ namespace TodoTaskAPI.Core.Interfaces
         Task<(IEnumerable<Todo> Items, int TotalCount)> GetAllWithPaginationAsync(int pageNumber, int pageSize);
 
         /// <summary>
+        /// Finds todos matching the specified criteria
+        /// </summary>
+        /// <param name="id">Optional ID to search by</param>
+        /// <param name="title">Optional title to search by</param>
+        /// <returns>Collection of matching todos</returns>
+        Task<IEnumerable<Todo>> FindTodosAsync(Guid? id = null, string? title = null);
+
+        /// <summary>
         /// Adds a new todo to the database
         /// </summary>
         Task<Todo> AddAsync(Todo todo);
