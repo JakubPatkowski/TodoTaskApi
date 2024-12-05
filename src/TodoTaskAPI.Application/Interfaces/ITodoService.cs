@@ -26,8 +26,6 @@ public interface ITodoService
     /// <returns>Paginated response with todo DTOs</returns>
     Task<PaginatedResponseDto<TodoDto>> GetAllTodosWithPaginationAsync(PaginationParametersDto parameters);
 
-    // src/TodoTaskAPI.Application/Interfaces/ITodoService.cs
-    // Add this method to the interface
     /// <summary>
     /// Finds specific todos based on search parameters
     /// </summary>
@@ -42,4 +40,12 @@ public interface ITodoService
     /// <returns>Created todo as DTO</returns>
     /// <exception cref="ValidationException">Thrown when validation fails</exception>
     Task<TodoDto> CreateTodoAsync(CreateTodoDto createTodoDto);
+
+    /// <summary>
+    /// Creates a new todo item
+    /// </summary>
+    /// <param name="TodoTimePeriodParametersDto">Data for creating new todo</param>
+    /// <returns>Created todo as DTO</returns>
+    /// <exception cref="ValidationException">Thrown when validation fails</exception>
+    Task<IEnumerable<TodoDto>> GetTodosByTimePeriodAsync(TodoTimePeriodParametersDto timePeriodDto);
 }

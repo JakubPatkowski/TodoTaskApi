@@ -63,21 +63,53 @@ namespace TodoTaskAPI.IntegrationTests.Infrastructure
         {
             await _dbContainer.StartAsync();
 
-            // Ensure database is clean and migrated
-            using var scope = Factory.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            // Polityka ponownych prób
+            var retryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(10, // Zwiększona liczba prób
+                    retryAttempt => 
+                        TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), // Exponential backoff
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        Console.WriteLine($"Próba {retryCount}: Oczekiwanie {timeSpan.TotalSeconds} sekund po błędzie: {exception.Message}");
+                    });
 
-            // First, ensure we drop and recreate the database
-            await db.Database.EnsureDeletedAsync();
-            await db.Database.MigrateAsync();
+            await retryPolicy.ExecuteAsync(async () =>
+            {
+                using var scope = Factory.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // Initialize without seeding test data
-            await DbInitializer.Initialize(db, seedTestData: false);
+                // Poczekaj na gotowość bazy danych
+                var isReady = false;
+                for (int i = 0; i < 30 && !isReady; i++) // Maksymalnie 30 sekund oczekiwania
+                {
+                    try
+                    {
+                        await db.Database.CanConnectAsync();
+                        isReady = true;
+                    }
+                    catch
+                    {
+                        await Task.Delay(1000);
+                    }
+                }
+
+                if (!isReady)
+                {
+                    throw new Exception("Nie można połączyć się z bazą danych po 30 sekundach.");
+                }
+
+                // Upewnij się, że baza danych jest czysta i zmigrowna
+                await db.Database.EnsureDeletedAsync();
+                await db.Database.MigrateAsync();
+
+                // Inicjalizacja bez danych testowych
+                await DbInitializer.Initialize(db, seedTestData: false);
+            });
         }
 
         public async Task DisposeAsync()
         {
-            // Clean up the database
             using var scope = Factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await db.Database.EnsureDeletedAsync();
@@ -86,14 +118,22 @@ namespace TodoTaskAPI.IntegrationTests.Infrastructure
             await _dbContainer.DisposeAsync();
         }
 
-        // Helper method to clean database between tests if needed
+        // Helper do czyszczenia bazy między testami
         public async Task CleanDatabaseAsync()
         {
-            using var scope = Factory.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            await db.Database.EnsureDeletedAsync();
-            await db.Database.MigrateAsync();
-            await DbInitializer.Initialize(db, seedTestData: false);
+            var retryPolicy = Policy
+                .Handle<Exception>()
+                .WaitAndRetryAsync(5,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+            await retryPolicy.ExecuteAsync(async () =>
+            {
+                using var scope = Factory.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await db.Database.EnsureDeletedAsync();
+                await db.Database.MigrateAsync();
+                await DbInitializer.Initialize(db, seedTestData: false);
+            });
         }
     }
 }
