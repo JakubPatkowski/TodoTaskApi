@@ -292,6 +292,67 @@ public class TodosController : ControllerBase
                     "An unexpected error occurred while creating the todo"+ex.Message));
         }
     }
+
+    /// <summary>
+    /// Gets todos within specified time period
+    /// </summary>
+    /// <remarks>
+    /// Sample requests:
+    /// 
+    ///     GET /api/todos/upcoming?period=Today
+    ///     GET /api/todos/upcoming?period=Tomorrow
+    ///     GET /api/todos/upcoming?period=CurrentWeek
+    ///     GET /api/todos/upcoming?period=Custom&amp;startDate=2024-12-31&amp;endDate=2025-01-07
+    /// 
+    /// </remarks>
+    /// <param name="timePeriodDto">Time period parameters</param>
+    /// <returns>Collection of todos within the specified period</returns>
+    /// <response code="200">Returns matching todos</response>
+    /// <response code="400">If the parameters are invalid</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpGet("upcoming")]
+    [ProducesResponseType(typeof(ApiResponseDto<IEnumerable<TodoDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto<ValidationErrorResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponseDto<IEnumerable<TodoDto>>>> GetUpcoming(
+        [FromQuery] TodoTimePeriodParametersDto timePeriodDto)
+    {
+        try
+        {
+            _logger.LogInformation(
+                "Getting upcoming todos for period: {Period}",
+                timePeriodDto.Period);
+
+            var todos = await _todoService.GetTodosByTimePeriodAsync(timePeriodDto);
+
+            return Ok(ApiResponseDto<IEnumerable<TodoDto>>.Success(
+                todos,
+                $"Successfully retrieved todos for period: {timePeriodDto.Period}"));
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error in GetUpcoming endpoint");
+            return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                StatusCodes.Status400BadRequest,
+                ex.Message,
+                new ValidationErrorResponse
+                {
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Validation", new[] { ex.Message } }
+                    }
+                }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error in GetUpcoming endpoint");
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponseDto<object>.Failure(
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred while retrieving upcoming todos"));
+        }
+    }
 }
 
 /// <summary>

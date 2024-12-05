@@ -35,6 +35,14 @@ namespace TodoTaskAPI.Core.Interfaces
         Task<IEnumerable<Todo>> FindTodosAsync(Guid? id = null, string? title = null);
 
         /// <summary>
+        /// Gets todos within specified date range
+        /// </summary>
+        /// <param name="startDate">Start of the date range</param>
+        /// <param name="endDate">End of the date range</param>
+        /// <returns>Collection of todos within the date range</returns>
+        Task<IEnumerable<Todo>> GetTodosByDateRangeAsync(DateTime startDate, DateTime endDate);
+
+        /// <summary>
         /// Adds a new todo to the database
         /// </summary>
         Task<Todo> AddAsync(Todo todo);
