@@ -54,15 +54,15 @@ namespace TodoTaskAPI.Application.DTOs
         }
 
         /// <summary>
-        /// Creates a failed response
+        /// Creates a failed response, optionally with error data
         /// </summary>
-        public static ApiResponseDto<T> Failure(int statusCode, string message)
+        public static ApiResponseDto<T> Failure(int statusCode, string message, T? data = default)
         {
             return new ApiResponseDto<T>
             {
                 StatusCode = statusCode,
                 Message = message,
-                Data = default
+                Data = data
             };
         }
     }

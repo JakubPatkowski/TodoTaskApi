@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace TodoTaskAPI.UnitTests.Services
 {
@@ -19,12 +20,14 @@ namespace TodoTaskAPI.UnitTests.Services
     public class TodoServiceTests
     {
         private readonly Mock<ITodoRepository> _mockRepository;
+        private readonly Mock<ILogger<TodoService>> _mockLogger;
         private readonly TodoService _service;
 
         public TodoServiceTests() 
         {
             _mockRepository  = new Mock<ITodoRepository>();
-            _service = new TodoService(_mockRepository.Object);
+            _mockLogger = new Mock<ILogger<TodoService>>();
+            _service = new TodoService(_mockRepository.Object, _mockLogger.Object);
         }
 
         /// <summary>
@@ -131,7 +134,7 @@ namespace TodoTaskAPI.UnitTests.Services
             mockRepository.Setup(r => r.GetAllAsync())
                 .ReturnsAsync(new List<Todo>());
 
-            var service = new TodoService(mockRepository.Object);
+            var service = new TodoService(mockRepository.Object, _mockLogger.Object);
 
             // Act
             var result = await service.GetAllTodosAsync();
@@ -162,7 +165,7 @@ namespace TodoTaskAPI.UnitTests.Services
                     totalItems
                 ));
 
-            var service = new TodoService(mockRepository.Object);
+            var service = new TodoService(mockRepository.Object, _mockLogger.Object);
             var parameters = new PaginationParametersDto
             {
                 PageNumber = lastPage,
