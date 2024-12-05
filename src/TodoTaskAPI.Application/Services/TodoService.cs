@@ -191,4 +191,64 @@ public class TodoService : ITodoService
         CreatedAt = todo.CreatedAt,
         UpdatedAt = todo.UpdatedAt
     };
+
+    /// <summary>
+    /// Gets todos within specified time period
+    /// </summary>
+    /// <param name="timePeriodDto">Time period parameters</param>
+    /// <returns>Collection of todos within the specified period</returns>
+    /// <exception cref="ValidationException">Thrown when parameters are invalid</exception>
+    public async Task<IEnumerable<TodoDto>> GetTodosByTimePeriodAsync(TodoTimePeriodParametersDto timePeriodDto)
+    {
+        try
+        {
+            _logger.LogInformation("Getting todos for period: {Period}", timePeriodDto.Period);
+
+            timePeriodDto.Validate();
+
+            var (startDate, endDate) = CalculateDateRange(timePeriodDto);
+            var todos = await _todoRepository.GetTodosByDateRangeAsync(startDate, endDate);
+
+            return todos.Select(MapToDto);
+        }
+        catch (ValidationException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while getting todos by time period");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Calculates the date range based on the specified time period
+    /// </summary>
+    /// <param name="timePeriodDto">Time period parameters</param>
+    /// <returns>Tuple containing start and end dates</returns>
+    private static (DateTime StartDate, DateTime EndDate) CalculateDateRange(TodoTimePeriodParametersDto timePeriodDto)
+    {
+        var today = DateTime.UtcNow.Date;
+
+        return timePeriodDto.Period switch
+        {
+            TodoTimePeriodParametersDto.TimePeriod.Today => (today, today),
+
+            TodoTimePeriodParametersDto.TimePeriod.Tomorrow => (
+                today.AddDays(1),
+                today.AddDays(1)),
+
+            TodoTimePeriodParametersDto.TimePeriod.CurrentWeek => (
+                today,
+                today.AddDays(6 - (int)today.DayOfWeek)),
+
+            TodoTimePeriodParametersDto.TimePeriod.Custom => (
+                timePeriodDto.StartDate!.Value.Date,
+                timePeriodDto.EndDate!.Value.Date),
+
+            _ => throw new ValidationException("Invalid time period specified")
+        };
+    }
 }
+

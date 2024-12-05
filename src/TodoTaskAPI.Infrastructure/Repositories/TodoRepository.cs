@@ -132,4 +132,33 @@ public class TodoRepository : ITodoRepository
             throw;
         }
     }
+
+    /// <summary>
+    /// Gets todos within specified date range with proper error handling
+    /// </summary>
+    /// <param name="startDate">Start of the date range (inclusive)</param>
+    /// <param name="endDate">End of the date range (inclusive)</param>
+    /// <returns>Collection of todos within the date range</returns>
+    public async Task<IEnumerable<Todo>> GetTodosByDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        try
+        {
+            _logger.LogInformation(
+                "Retrieving todos between {StartDate} and {EndDate}",
+                startDate, endDate);
+
+            return await _context.Todos
+                .Where(t => t.ExpiryDateTime.Date >= startDate.Date &&
+                           t.ExpiryDateTime.Date <= endDate.Date)
+                .OrderBy(t => t.ExpiryDateTime)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Error occurred while retrieving todos by date range. StartDate: {StartDate}, EndDate: {EndDate}",
+                startDate, endDate);
+            throw;
+        }
+    }
 }
