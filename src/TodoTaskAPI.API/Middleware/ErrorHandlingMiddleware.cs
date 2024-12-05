@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TodoTaskAPI.Application.DTOs;
 
 namespace TodoTaskAPI.API.Middleware
 {
@@ -37,12 +38,24 @@ namespace TodoTaskAPI.API.Middleware
         {
             context.Response.ContentType = "application/json";
 
-            var response = new
+            object response = exception switch
             {
-                error = new
+                ValidationException validationEx => new ApiResponseDto<ValidationErrorResponse>
                 {
-                    message = exception.Message,
-                    statusCode = context.Response.StatusCode
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = validationEx.Message,
+                    Data = new ValidationErrorResponse
+                    {
+                        Errors = new Dictionary<string, string[]>
+                {
+                    { "Validation", new[] { validationEx.Message } }
+                }
+                    }
+                },
+                _ => new ApiResponseDto<object>
+                {
+                    StatusCode = context.Response.StatusCode,
+                    Message = exception.Message
                 }
             };
 

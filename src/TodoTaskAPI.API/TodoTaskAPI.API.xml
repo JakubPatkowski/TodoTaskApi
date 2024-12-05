@@ -4,6 +4,12 @@
         <name>TodoTaskAPI.API</name>
     </assembly>
     <members>
+        <member name="T:TodosController">
+            <summary>
+            Controller handling CRUD operations for Todo items.
+            Implements rate limiting, validation, and proper error handling.
+            </summary>
+        </member>
         <member name="M:TodosController.#ctor(TodoTaskAPI.Application.Interfaces.ITodoService,Microsoft.Extensions.Logging.ILogger{TodosController})">
             <summary>
             Initializes a new instance of the TodosController
@@ -30,6 +36,34 @@
             <response code="400">Invalid pagination parameters</response>
             <response code="429">Too many requests - rate limit exceeded</response>
             <response code="500">Internal server error</response>
+        </member>
+        <member name="M:TodosController.Create(TodoTaskAPI.Application.DTOs.CreateTodoDto)">
+            <summary>
+            Creates a new todo item
+            </summary>
+            <remarks>
+            Sample request:
+            
+                POST /api/todos
+                {
+                    "title": "Complete project",
+                    "description": "Finish the REST API implementation",
+                    "expiryDateTime": "2024-12-31T23:59:59Z",
+                    "percentComplete": 0
+                }
+            
+            </remarks>
+            <param name="createTodoDto">Todo creation data</param>
+            <returns>Created todo item</returns>
+            <response code="201">Returns the newly created todo</response>
+            <response code="400">If the todo data is invalid</response>
+            <response code="429">Too many requests - rate limit exceeded</response>
+            <response code="500">If there was an internal server error</response>
+        </member>
+        <member name="T:ValidationErrorResponse">
+            <summary>
+            Response model for validation errors
+            </summary>
         </member>
         <member name="T:TodoTaskAPI.API.Middleware.RateLimitingMiddleware">
             <summary>

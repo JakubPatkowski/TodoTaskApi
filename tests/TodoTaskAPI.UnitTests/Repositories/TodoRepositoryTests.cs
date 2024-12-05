@@ -1,9 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TodoTaskAPI.Application.Services;
 using TodoTaskAPI.Core.Entities;
 using TodoTaskAPI.Infrastructure.Data;
 using TodoTaskAPI.Infrastructure.Repositories;
@@ -17,14 +20,18 @@ namespace TodoTaskAPI.UnitTests.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly TodoRepository _repository;
+        private readonly Mock<ILogger<TodoRepository>> _mockLogger;
+
 
         public TodoRepositoryTests()
         {
+            
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
             _context = new ApplicationDbContext(options);
-            _repository = new TodoRepository(_context);
+            _mockLogger = new Mock<ILogger<TodoRepository>>();
+            _repository = new TodoRepository(_context, _mockLogger.Object);
         }
 
         /// <summary>
@@ -111,7 +118,7 @@ namespace TodoTaskAPI.UnitTests.Repositories
                 .Options;
 
             using var context = new ApplicationDbContext(options);
-            var repository = new TodoRepository(context);
+            var repository = new TodoRepository(context, _mockLogger.Object);
 
             var todos = new[]
             {
@@ -145,7 +152,7 @@ namespace TodoTaskAPI.UnitTests.Repositories
                 .Options;
 
             using var context = new ApplicationDbContext(options);
-            var repository = new TodoRepository(context);
+            var repository = new TodoRepository(context, _mockLogger.Object);
 
             // Add only 5 items
             var todos = Enumerable.Range(1, 5).Select(i => new Todo

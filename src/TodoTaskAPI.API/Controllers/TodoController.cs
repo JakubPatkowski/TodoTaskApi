@@ -1,10 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using TodoTaskAPI.Application.DTOs;
 using TodoTaskAPI.Application.Interfaces;
 using TodoTaskAPI.Core.Exceptions;
 using ValidationException = TodoTaskAPI.Core.Exceptions.ValidationException;
 
+
+/// <summary>
+/// Controller handling CRUD operations for Todo items.
+/// Implements rate limiting, validation, and proper error handling.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
@@ -55,6 +61,8 @@ public class TodosController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Starting todos get");
+
             // If no pagination parameters provided, return all todos
             if (!pageNumber.HasValue && !pageSize.HasValue)
             {
@@ -94,6 +102,7 @@ public class TodosController : ControllerBase
                 paginatedTodos,
                 "Successfully retrieved paginated todos"));
         }
+        // Validation params exception
         catch (System.ComponentModel.DataAnnotations.ValidationException ex)
         {
             _logger.LogWarning(ex, "Validation error in GetAll endpoint");
@@ -101,6 +110,7 @@ public class TodosController : ControllerBase
                StatusCodes.Status400BadRequest,
                ex.Message));
         }
+        // Validation DTO exception
         catch (TodoTaskAPI.Core.Exceptions.ValidationException ex)
         {
             _logger.LogWarning(ex, "Validation error in GetAll endpoint");
@@ -108,6 +118,7 @@ public class TodosController : ControllerBase
                 StatusCodes.Status400BadRequest,
                 ex.Message));
         }
+        // Unexpected error handling block
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error in GetAll endpoint");
@@ -120,4 +131,101 @@ public class TodosController : ControllerBase
 
 
     }
+
+    /// <summary>
+    /// Creates a new todo item
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     POST /api/todos
+    ///     {
+    ///         "title": "Complete project",
+    ///         "description": "Finish the REST API implementation",
+    ///         "expiryDateTime": "2024-12-31T23:59:59Z",
+    ///         "percentComplete": 0
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="createTodoDto">Todo creation data</param>
+    /// <returns>Created todo item</returns>
+    /// <response code="201">Returns the newly created todo</response>
+    /// <response code="400">If the todo data is invalid</response>
+    /// <response code="429">Too many requests - rate limit exceeded</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpPost]
+    [Produces("application/json")]
+    [Consumes("application/json")]
+    [ProducesResponseType(typeof(ApiResponseDto<TodoDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ApiResponseDto<ValidationErrorResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponseDto<TodoDto>>> Create([FromBody] CreateTodoDto createTodoDto)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo creation process for title: {Title}", createTodoDto.Title);
+
+            // Model state validation block - validates incoming DTO against data annotations
+            if (!ModelState.IsValid)
+            {
+                var validationErrors = ModelState
+                    .Where(x => x.Value?.Errors.Any() == true)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                    );
+
+                _logger.LogWarning("Model validation failed for todo creation. Errors: {@ValidationErrors}", validationErrors);
+
+                return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                    StatusCodes.Status400BadRequest,
+                    "One or more validation errors occurred",
+                    new ValidationErrorResponse { Errors = validationErrors }
+                ));
+            }
+
+            var todo = await _todoService.CreateTodoAsync(createTodoDto);
+
+            _logger.LogInformation("Successfully created todo with ID: {TodoId}", todo.Id);
+
+            return Created(
+                $"api/todos/{todo.Id}",
+                ApiResponseDto<TodoDto>.Success(
+                    todo,
+                    $"Todo '{todo.Title}' created successfully with ID: {todo.Id}")
+            );
+        }
+        catch (TodoTaskAPI.Core.Exceptions.ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error occurred");
+            return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                StatusCodes.Status400BadRequest,
+                ex.Message,
+                new ValidationErrorResponse
+                {
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Validation", new[] { ex.Message } }
+                    }
+                }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error creating todo");
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponseDto<ValidationErrorResponse>.Failure(
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred while creating the todo"+ex.Message));
+        }
+    }
+}
+
+/// <summary>
+/// Response model for validation errors
+/// </summary>
+public class ValidationErrorResponse
+{
+    public Dictionary<string, string[]> Errors { get; set; } = new();
 }

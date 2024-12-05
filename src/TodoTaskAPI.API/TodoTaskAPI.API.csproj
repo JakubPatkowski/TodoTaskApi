@@ -8,6 +8,13 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 		<DocumentationFile>TodoTaskAPI.API.xml</DocumentationFile>
+		<UserSecretsId>379570df-287f-4f8e-9c42-f1bdbf885ace</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerfileContext>..\..</DockerfileContext>
+		<DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+		<PreserveCompilationContext>true</PreserveCompilationContext>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+
 	</PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +23,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.1.0" />
   </ItemGroup>
 
@@ -23,6 +31,12 @@
     <ProjectReference Include="..\TodoTaskAPI.Core\TodoTaskAPI.Core.csproj" />
     <ProjectReference Include="..\TodoTaskAPI.Infrastructure\TodoTaskAPI.Infrastructure.csproj" />
     <ProjectReference Include="..\TodoTaskAPI.Application\TodoTaskAPI.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+  	<None Update="xunit.runner.json">
+  	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  	</None>
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Database=TodoDb;Username=postgres;Password=postgres
+    volumes:
+      - ./TestResults:/app/TestResults
+
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=TodoDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

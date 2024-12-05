@@ -14,10 +14,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.Application", "src\TodoTaskAPI.Application\TodoTaskAPI.Application.csproj", "{489D9BBE-067F-4EA0-BE42-16F5723C4154}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E96B0648-895D-4137-A5AB-60BF8EA501F8}"
+	ProjectSection(SolutionItems) = preProject
+		appsettings.Testing.json = appsettings.Testing.json
+		xunit.runner.json = xunit.runner.json
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.UnitTests", "tests\TodoTaskAPI.UnitTests\TodoTaskAPI.UnitTests.csproj", "{A7F6FA0D-8DA0-488A-8C7B-8CCBAB540420}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodoTaskAPI.IntegrationTests", "tests\TodoTaskAPI.IntegrationTests\TodoTaskAPI.IntegrationTests.csproj", "{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{E1B5539D-4BF1-48F4-9592-A92A9F3E78B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +55,10 @@ Global
 		{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AAB01CF-69E1-4CC8-8580-EDEF0B7F00F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1B5539D-4BF1-48F4-9592-A92A9F3E78B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1B5539D-4BF1-48F4-9592-A92A9F3E78B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1B5539D-4BF1-48F4-9592-A92A9F3E78B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1B5539D-4BF1-48F4-9592-A92A9F3E78B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -25,6 +25,11 @@ namespace TodoTaskAPI.Core.Interfaces
         /// <param name="pageSize">Items per page</param>
         /// <returns>Tuple containing paginated items and total count</returns>
         Task<(IEnumerable<Todo> Items, int TotalCount)> GetAllWithPaginationAsync(int pageNumber, int pageSize);
+
+        /// <summary>
+        /// Adds a new todo to the database
+        /// </summary>
+        Task<Todo> AddAsync(Todo todo);
     }
 }
 

@@ -10,6 +10,21 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: TodoDb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     - uses: actions/checkout@v3
     
@@ -19,10 +34,15 @@ jobs:
         dotnet-version: '8.0.x'
     
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore TodoTaskApi.sln 
     
     - name: Build
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build TodoTaskApi.sln --no-restore --configuration Release
     
-    - name: Test
-      run: dotnet test --no-build --configuration Release --verbosity normal
+    - name: Run Unit Tests
+      run: dotnet test tests/TodoTaskAPI.UnitTests/TodoTaskAPI.UnitTests.csproj --configuration Release --no-build
+      
+    - name: Run Integration Tests
+      run: dotnet test tests/TodoTaskAPI.IntegrationTests/TodoTaskAPI.IntegrationTests.csproj --configuration Release --no-build
+      env:
+        ASPNETCORE_ENVIRONMENT: Testing

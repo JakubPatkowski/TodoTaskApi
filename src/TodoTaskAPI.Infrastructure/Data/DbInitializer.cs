@@ -9,11 +9,12 @@ namespace TodoTaskAPI.Infrastructure.Data;
 
 public static class DbInitializer
 {
-    public static async Task Initialize(ApplicationDbContext context)
+    public static async Task Initialize(ApplicationDbContext context, bool seedTestData = false)
     {
         await context.Database.EnsureCreatedAsync();
 
-        if (!context.Todos.Any())
+        // Only seed test data if explicitly requested and no data exists
+        if (seedTestData && !context.Todos.Any())
         {
             var todos = new[]
             {
@@ -43,5 +44,5 @@ public static class DbInitializer
             await context.SaveChangesAsync();
         }
     }
-} 
+}
 
