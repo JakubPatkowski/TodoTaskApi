@@ -132,6 +132,78 @@ public class TodosController : ControllerBase
 
     }
 
+
+    /// <summary>
+    /// Finds specific todos based on ID or title
+    /// </summary>
+    /// <remarks>
+    /// Sample requests:
+    /// 
+    ///     GET /api/todos/search?id=123e4567-e89b-12d3-a456-426614174000
+    ///     GET /api/todos/search?title=Complete project
+    /// 
+    /// At least one parameter (id or title) must be provided
+    /// </remarks>
+    /// <param name="parameters">Search parameters (ID or title)</param>
+    /// <returns>Collection of matching todos</returns>
+    /// <response code="200">Returns matching todos</response>
+    /// <response code="400">If the search parameters are invalid</response>
+    /// <response code="404">If not found specific todo</response>
+    /// <response code="429">Too many requests - rate limit exceeded</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpGet("search")]
+    [ProducesResponseType(typeof(ApiResponseDto<IEnumerable<TodoDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto<ValidationErrorResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponseDto<IEnumerable<TodoDto>>>> FindTodos(
+    [FromQuery] TodoSearchParametersDto parameters)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo search with parameters: ID: {Id}, Title: {Title}",
+                parameters.Id, parameters.Title);
+
+            var todos = await _todoService.FindTodosAsync(parameters);
+
+            if (!todos.Any())
+            {
+                return NotFound(ApiResponseDto<IEnumerable<TodoDto>>.Failure(
+                    StatusCodes.Status404NotFound,
+                    "No todos found matching the specified criteria",
+                    todos));
+            }
+
+            return Ok(ApiResponseDto<IEnumerable<TodoDto>>.Success(
+                todos,
+                "Successfully retrieved matching todos"));
+        }
+        catch (TodoTaskAPI.Core.Exceptions.ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error in FindTodos endpoint");
+            return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                StatusCodes.Status400BadRequest,
+                ex.Message,
+                new ValidationErrorResponse
+                {
+                    Errors = new Dictionary<string, string[]>
+                    {
+                    { "Validation", new[] { ex.Message } }
+                    }
+                }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error in FindTodos endpoint");
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponseDto<object>.Failure(
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred while searching for todos"));
+        }
+    }
+
     /// <summary>
     /// Creates a new todo item
     /// </summary>
@@ -158,7 +230,7 @@ public class TodosController : ControllerBase
     [Consumes("application/json")]
     [ProducesResponseType(typeof(ApiResponseDto<TodoDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponseDto<ValidationErrorResponse>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<ApiResponseDto<TodoDto>>> Create([FromBody] CreateTodoDto createTodoDto)
     {

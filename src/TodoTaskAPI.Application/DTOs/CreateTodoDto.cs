@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using TodoTaskAPI.Application.Constants;
 
 namespace TodoTaskAPI.Application.DTOs
 {
@@ -25,7 +26,8 @@ namespace TodoTaskAPI.Application.DTOs
         /// </summary>
         [Required(ErrorMessage = "Title is required")]
         [StringLength(200, MinimumLength = 1, ErrorMessage = "Title must be between 1 and 200 characters")]
-        [RegularExpression(@"^[a-zA-Z0-9\s\-_.!?,:;()]+$", ErrorMessage = "Title can only contain letters, numbers, spaces, and basic punctuation (!?,:;.-_)")]
+        [RegularExpression(ValidationConstants.TitleRegexPattern,
+        ErrorMessage = ValidationConstants.TitleRegexErrorMessage)]
         public required string Title { get; set; }
 
         /// <summary>

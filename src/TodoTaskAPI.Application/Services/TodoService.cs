@@ -74,6 +74,39 @@ public class TodoService : ITodoService
         };
     }
 
+    // src/TodoTaskAPI.Application/Services/TodoService.cs
+    // Add this method to the TodoService class
+    /// <summary>
+    /// Finds specific todos based on search parameters with validation
+    /// </summary>
+    /// <param name="parameters">Search parameters</param>
+    /// <returns>Collection of matching todo DTOs</returns>
+    /// <exception cref="ValidationException">Thrown when parameters are invalid</exception>
+    public async Task<IEnumerable<TodoDto>> FindTodosAsync(TodoSearchParametersDto parameters)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo search with parameters: ID: {Id}, Title: {Title}",
+                parameters.Id, parameters.Title);
+
+            // Validate parameters
+            parameters.ValidateParameters();
+
+            var todos = await _todoRepository.FindTodosAsync(parameters.Id, parameters.Title);
+            return todos.Select(MapToDto);
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogError(ex, "Error occurred while searching for todos");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while searching for todos");
+            throw;
+        }
+    }
+
     /// <summary>
     /// Creates a new todo item with validation
     /// </summary>

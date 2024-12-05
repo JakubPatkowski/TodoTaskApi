@@ -121,7 +121,6 @@ namespace TodoTaskAPI.UnitTests.Controllers
             var createDto = new CreateTodoDto
             {
                 Title = "Test Todo",
-                //Description = "Test Description",
                 ExpiryDateTime = DateTime.UtcNow.AddDays(1)
             };
 
@@ -156,7 +155,7 @@ namespace TodoTaskAPI.UnitTests.Controllers
 
         [Theory]
         [InlineData("")]
-        [InlineData("&^@|\'`")]
+        [InlineData("Emoji 🚀 jest super")]
         [InlineData("This is a very long title that exceeds the maximum allowed length limit and should cause a validation error when attempting to create a new todo item in the system bla bla bla bla bla bla bla bla bla bla")]
         [InlineData(null)]
         public void Create_WithInvalidTitle_ReturnsBadRequest(string? title)

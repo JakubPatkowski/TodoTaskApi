@@ -48,6 +48,40 @@ public class TodoRepository : ITodoRepository
     }
 
     /// <summary>
+    /// Finds todos matching the specified criteria with proper error handling
+    /// </summary>
+    /// <param name="id">Optional ID to search by</param>
+    /// <param name="title">Optional title to search by (case-insensitive)</param>
+    /// <returns>Collection of matching todos</returns>
+    public async Task<IEnumerable<Todo>> FindTodosAsync(Guid? id = null, string? title = null)
+    {
+        try
+        {
+            var query = _context.Todos.AsQueryable();
+
+            if (id.HasValue)
+            {
+                query = query.Where(t => t.Id == id);
+            }
+
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                // Use EF.Functions.ILike for case-insensitive comparison that works with international characters
+                query = query.Where(t => EF.Functions.ILike(t.Title, title));
+            }
+
+            return await query
+                .OrderByDescending(t => t.ExpiryDateTime)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while searching for todos. ID: {Id}, Title: {Title}", id, title);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Adds a new todo to the database with proper error handling and transaction management.
     /// </summary>
     /// <param name="todo">Todo entity to be persisted</param>

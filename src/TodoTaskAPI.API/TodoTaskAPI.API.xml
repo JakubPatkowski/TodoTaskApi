@@ -37,6 +37,26 @@
             <response code="429">Too many requests - rate limit exceeded</response>
             <response code="500">Internal server error</response>
         </member>
+        <member name="M:TodosController.FindTodos(TodoTaskAPI.Application.DTOs.TodoSearchParametersDto)">
+            <summary>
+            Finds specific todos based on ID or title
+            </summary>
+            <remarks>
+            Sample requests:
+            
+                GET /api/todos/search?id=123e4567-e89b-12d3-a456-426614174000
+                GET /api/todos/search?title=Complete project
+            
+            At least one parameter (id or title) must be provided
+            </remarks>
+            <param name="parameters">Search parameters (ID or title)</param>
+            <returns>Collection of matching todos</returns>
+            <response code="200">Returns matching todos</response>
+            <response code="400">If the search parameters are invalid</response>
+            <response code="404">If not found specific todo</response>
+            <response code="429">Too many requests - rate limit exceeded</response>
+            <response code="500">If there was an internal server error</response>
+        </member>
         <member name="M:TodosController.Create(TodoTaskAPI.Application.DTOs.CreateTodoDto)">
             <summary>
             Creates a new todo item
