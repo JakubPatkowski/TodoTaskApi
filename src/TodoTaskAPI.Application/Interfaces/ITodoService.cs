@@ -56,4 +56,6 @@ public interface ITodoService
     /// <param name="updateTodoDto">Update data</param>
     /// <returns>Updated todo as DTO</returns>
     Task<TodoDto> UpdateTodoAsync(Guid id, UpdateTodoDto updateTodoDto);
+
+    Task DeleteTodoAsync(Guid id);
 }

@@ -125,6 +125,16 @@
             <response code="404">If todo with specified ID is not found</response>
             <response code="500">If there was an internal server error</response>
         </member>
+        <member name="M:TodosController.DeleteTodo(System.Guid)">
+            <summary>
+            Usuwa istniejące todo na podstawie podanego ID
+            </summary>
+            <param name="id">ID todo do usunięcia</param>
+            <returns>Odpowiedź API z informacją o pomyślnym usunięciu lub błędzie</returns>
+            <response code="200">Pomyślne usunięcie todo</response>
+            <response code="404">Nie znaleziono todo o podanym ID</response>
+            <response code="500">Nieoczekiwany błąd serwera</response>
+        </member>
         <member name="T:ValidationErrorResponse">
             <summary>
             Response model for validation errors

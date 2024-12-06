@@ -326,5 +326,32 @@ public class TodoService : ITodoService
             throw;
         }
     }
+
+
+    /// <summary>
+    /// Delete specific Todo
+    /// </summary>
+    /// <param name="id">ID todo do usunięcia</param>
+    /// <exception cref="NotFoundException">Wyrzucany, gdy todo nie zostanie znalezione</exception>
+    public async Task DeleteTodoAsync(Guid id)
+    {
+        try
+        {
+            _logger.LogInformation("Rozpoczynanie usuwania todo o ID: {TodoId}", id);
+            var todo = await _todoRepository.GetByIdAsync(id);
+            if (todo == null)
+            {
+                throw new NotFoundException($"Todo o ID {id} nie został znaleziony.");
+            }
+
+            await _todoRepository.DeleteAsync(todo);
+            _logger.LogInformation("Pomyślnie usunięto todo o ID: {TodoId}", id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas usuwania todo o ID: {TodoId}", id);
+            throw;
+        }
+    }
 }
 

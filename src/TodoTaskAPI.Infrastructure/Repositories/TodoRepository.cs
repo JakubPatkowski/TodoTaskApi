@@ -221,4 +221,27 @@ public class TodoRepository : ITodoRepository
             throw;
         }
     }
+
+    /// <summary>
+    /// Usuwa zadane todo z bazy danych
+    /// </summary>
+    /// <param name="todo">Todo do usunięcia</param>
+    public async Task DeleteAsync(Todo todo)
+    {
+        try
+        {
+            _context.Todos.Remove(todo);
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogError(ex, "Błąd aktualizacji concurrency podczas usuwania todo o ID: {TodoId}", todo.Id);
+            throw new Exception("Wystąpił błąd aktualizacji concurrency podczas usuwania todo.", ex);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Błąd podczas usuwania todo o ID: {TodoId}", todo.Id);
+            throw;
+        }
+    }
 }
