@@ -48,4 +48,12 @@ public interface ITodoService
     /// <returns>Created todo as DTO</returns>
     /// <exception cref="ValidationException">Thrown when validation fails</exception>
     Task<IEnumerable<TodoDto>> GetTodosByTimePeriodAsync(TodoTimePeriodParametersDto timePeriodDto);
+
+    /// <summary>
+    /// Updates an existing todo
+    /// </summary>
+    /// <param name="id">ID of todo to update</param>
+    /// <param name="updateTodoDto">Update data</param>
+    /// <returns>Updated todo as DTO</returns>
+    Task<TodoDto> UpdateTodoAsync(Guid id, UpdateTodoDto updateTodoDto);
 }

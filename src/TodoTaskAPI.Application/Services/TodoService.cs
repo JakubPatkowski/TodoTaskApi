@@ -250,5 +250,81 @@ public class TodoService : ITodoService
             _ => throw new ValidationException("Invalid time period specified")
         };
     }
+
+    /// <summary>
+    /// Updates an existing todo with validation and business rules
+    /// </summary>
+    /// <param name="id">ID of todo to update</param>
+    /// <param name="updateTodoDto">Update data</param>
+    /// <returns>Updated todo as DTO</returns>
+    /// <exception cref="ValidationException">Thrown when validation fails</exception>
+    /// <exception cref="NotFoundException">Thrown when todo is not found</exception>
+    public async Task<TodoDto> UpdateTodoAsync(Guid id, UpdateTodoDto updateTodoDto)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo update for ID: {TodoId}", id);
+
+            // Validate that at least one property is being updated
+            updateTodoDto.ValidateAtLeastOnePropertySet();
+
+            // Get existing todo
+            var todo = await _todoRepository.GetByIdAsync(id);
+            if (todo == null)
+            {
+                throw new NotFoundException($"Todo with ID {id} not found");
+            }
+
+            // Update only provided properties
+            if (updateTodoDto.Title != null)
+            {
+                todo.Title = updateTodoDto.Title.Trim();
+            }
+
+            if (updateTodoDto.Description != null)
+            {
+                todo.Description = updateTodoDto.Description.Trim();
+            }
+
+            if (updateTodoDto.ExpiryDateTime.HasValue)
+            {
+                todo.ExpiryDateTime = updateTodoDto.ExpiryDateTime.Value.ToUniversalTime();
+            }
+
+            if (updateTodoDto.PercentComplete.HasValue)
+            {
+                todo.PercentComplete = updateTodoDto.PercentComplete.Value;
+            }
+
+            if (updateTodoDto.IsDone.HasValue)
+            {
+                todo.IsDone = updateTodoDto.IsDone.Value;
+                if (todo.IsDone)
+                {
+                    todo.PercentComplete = 100;
+                }
+            }
+
+            var updatedTodo = await _todoRepository.UpdateAsync(todo);
+            _logger.LogInformation("Successfully updated todo with ID: {TodoId}", id);
+
+            return MapToDto(updatedTodo);
+        }
+        catch (NotFoundException)
+        {
+            _logger.LogWarning("Todo not found during update: {TodoId}", id);
+            throw;
+        }
+        catch (ValidationException)
+        {
+            _logger.LogWarning("Validation failed during todo update for ID: {TodoId}", id);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating todo: {TodoId}", id);
+            throw;
+        }
+    }
 }
 

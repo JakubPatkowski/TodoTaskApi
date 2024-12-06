@@ -102,6 +102,7 @@ namespace TodoTaskAPI.IntegrationTests.Endpoints
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.NotNull(content);
+            Assert.NotNull(content.Message);
             Assert.Contains("past", content.Message.ToLower());
         }
 

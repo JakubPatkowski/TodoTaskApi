@@ -353,6 +353,93 @@ public class TodosController : ControllerBase
                     "An unexpected error occurred while retrieving upcoming todos"));
         }
     }
+
+    /// <summary>
+    /// Updates an existing todo item
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     PUT /api/todos/{id}
+    ///     {
+    ///         "title": "Updated title",
+    ///         "description": "Updated description",
+    ///         "expiryDateTime": "2024-12-31T23:59:59Z",
+    ///         "percentComplete": 50,
+    ///         "isDone": false
+    ///     }
+    /// 
+    /// Only provide the properties you want to update. Omitted properties will remain unchanged.
+    /// </remarks>
+    /// <param name="id">ID of todo to update</param>
+    /// <param name="updateTodoDto">Update data</param>
+    /// <returns>Updated todo item</returns>
+    /// <response code="200">Returns the updated todo</response>
+    /// <response code="400">If the update data is invalid</response>
+    /// <response code="404">If todo with specified ID is not found</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponseDto<TodoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto<ValidationErrorResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponseDto<TodoDto>>> Update(Guid id, UpdateTodoDto updateTodoDto)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo update for ID: {TodoId}", id);
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                );
+
+                return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                    StatusCodes.Status400BadRequest,
+                    "Validation failed",
+                    new ValidationErrorResponse { Errors = errors }
+                ));
+            }
+
+            var updatedTodo = await _todoService.UpdateTodoAsync(id, updateTodoDto);
+
+            return Ok(ApiResponseDto<TodoDto>.Success(
+                updatedTodo,
+                $"Todo '{updatedTodo.Title}' updated successfully"));
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error occurred during todo update");
+            return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                StatusCodes.Status400BadRequest,
+                ex.Message,
+                new ValidationErrorResponse
+                {
+                    Errors = new Dictionary<string, string[]>
+                    {
+                    { "Validation", new[] { ex.Message } }
+                    }
+                }));
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Todo not found during update");
+            return NotFound(ApiResponseDto<object>.Failure(
+                StatusCodes.Status404NotFound,
+                ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating todo");
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponseDto<object>.Failure(
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred while updating the todo"));
+        }
+    }
 }
 
 /// <summary>
