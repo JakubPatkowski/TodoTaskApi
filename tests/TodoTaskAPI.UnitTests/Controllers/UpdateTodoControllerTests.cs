@@ -112,7 +112,9 @@ namespace TodoTaskAPI.UnitTests.Controllers
             Assert.NotNull(result);
             var response = Assert.IsType<ApiResponseDto<ValidationErrorResponse>>(result.Value);
             Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
-            Assert.Contains("Title", response.Data?.Errors.Keys);
+            Assert.NotNull(response.Data);
+            Assert.NotNull(response.Data.Errors);
+            Assert.Contains("Title", response.Data.Errors.Keys);
         }
     }
 }

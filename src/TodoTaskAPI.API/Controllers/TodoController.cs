@@ -440,7 +440,50 @@ public class TodosController : ControllerBase
                     "An unexpected error occurred while updating the todo"));
         }
     }
+
+    /// <summary>
+    /// Usuwa istniejące todo na podstawie podanego ID
+    /// </summary>
+    /// <param name="id">ID todo do usunięcia</param>
+    /// <returns>Odpowiedź API z informacją o pomyślnym usunięciu lub błędzie</returns>
+    /// <response code="200">Pomyślne usunięcie todo</response>
+    /// <response code="404">Nie znaleziono todo o podanym ID</response>
+    /// <response code="500">Nieoczekiwany błąd serwera</response>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponseDto<object>>> DeleteTodo(Guid id)
+    {
+        try
+        {
+            _logger.LogInformation("Rozpoczynanie usuwania todo o ID: {TodoId}", id);
+            await _todoService.DeleteTodoAsync(id);
+            return Ok(ApiResponseDto<object>.Success(id, $"Todo o ID {id} został pomyślnie usunięty."));
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Nie znaleziono todo o ID: {TodoId}", id);
+            return NotFound(ApiResponseDto<object>.Failure(
+                StatusCodes.Status404NotFound,
+                ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Nieoczekiwany błąd podczas usuwania todo o ID: {TodoId}", id);
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponseDto<object>.Failure(
+                    StatusCodes.Status500InternalServerError,
+                    "Wystąpił nieoczekiwany błąd serwera podczas usuwania todo."));
+        }
+    }
+
+
+
 }
+
+
 
 /// <summary>
 /// Response model for validation errors

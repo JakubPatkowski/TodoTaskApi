@@ -61,6 +61,8 @@ namespace TodoTaskAPI.Core.Interfaces
         /// <param name="id">Todo ID</param>
         /// <returns>Todo entity if found, null if not found</returns>
         Task<Todo?> GetByIdAsync(Guid id);
+
+        Task DeleteAsync(Todo todo);
     }
 }
 
