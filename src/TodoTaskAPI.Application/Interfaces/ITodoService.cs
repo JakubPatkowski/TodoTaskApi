@@ -57,5 +57,29 @@ public interface ITodoService
     /// <returns>Updated todo as DTO</returns>
     Task<TodoDto> UpdateTodoAsync(Guid id, UpdateTodoDto updateTodoDto);
 
+
+    // <summary>
+    /// Deletes a todo item by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the todo item to delete.</param>
+    /// <exception cref="NotFoundException">Thrown when the todo item is not found.</exception>
     Task DeleteTodoAsync(Guid id);
+
+    /// <summary>
+    /// Updates the completion percentage of a todo
+    /// Automatically marks todo as done when percentage reaches 100
+    /// </summary>
+    /// <param name="id">ID of todo to update</param>
+    /// <param name="updateDto">Update data containing new completion percentage</param>
+    /// <returns>Updated todo as DTO</returns>
+    Task<TodoDto> UpdateTodoCompletionAsync(Guid id, UpdateTodoCompletionDto updateDto);
+
+    /// <summary>
+    /// Updates the done status of a todo
+    /// Automatically sets completion percentage based on done status
+    /// </summary>
+    /// <param name="id">ID of todo to update</param>
+    /// <param name="updateDto">Update data containing new done status</param>
+    /// <returns>Updated todo as DTO</returns>
+    Task<TodoDto> UpdateTodoDoneStatusAsync(Guid id, UpdateTodoDoneStatusDto updateDto);
 }

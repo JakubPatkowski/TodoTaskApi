@@ -1,18 +1,34 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.Diagnostics;
 
 namespace TodoTaskAPI.API.Middleware
 {
+    /// <summary>
+    /// Middleware for logging details of each HTTP request and its response.
+    /// Provides insights into request duration, request data, and response status.
+    /// </summary>
     public class RequestLoggingMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<RequestLoggingMiddleware> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequestLoggingMiddleware"/> class.
+        /// </summary>
+        /// <param name="next">The next middleware in the HTTP request pipeline.</param>
+        /// <param name="logger">Logger instance for capturing request details.</param>
         public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
         {
             _next = next;
             _logger = logger;
         }
 
+        /// <summary>
+        /// Middleware entry point, called for each HTTP request.
+        /// Logs request details and measures the time taken to process the request.
+        /// </summary>
+        /// <param name="context">The current HTTP context.</param>
         public async Task InvokeAsync(HttpContext context)
         {
             var stopwatch = Stopwatch.StartNew();
@@ -20,6 +36,7 @@ namespace TodoTaskAPI.API.Middleware
             try
             {
                 var requestBody = "";
+
                 // Only read the body for non-GET requests to avoid performance impact
                 if(!context.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
                 {
@@ -38,10 +55,12 @@ namespace TodoTaskAPI.API.Middleware
                     context.Request.QueryString,
                     requestBody);
 
+                // Pass control to the next middleware in the pipeline.
                 await _next(context);
 
                 stopwatch.Stop();
 
+                // Log the response details, including the elapsed time.
                 _logger.LogInformation(
                      "Request {Method} {Path} completed in {ElapsedMilliseconds}ms with status code {StatusCode}",
                      context.Request.Method,
@@ -52,13 +71,15 @@ namespace TodoTaskAPI.API.Middleware
             catch (Exception ex)
             {
                 stopwatch.Stop();
+
+                // Log the exception and the time it took before failure.
                 _logger.LogError(
                     ex,
                     "Request {Method} {Path} failed after {ElapsedMilliseconds}ms",
                     context.Request.Method,
                     context.Request.Path,
                     stopwatch.ElapsedMilliseconds);
-                throw;
+                throw;   // Re-throw the exception to propagate it up the middleware pipeline.
             }
         }
     }

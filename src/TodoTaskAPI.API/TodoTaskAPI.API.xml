@@ -135,10 +135,82 @@
             <response code="404">Nie znaleziono todo o podanym ID</response>
             <response code="500">Nieoczekiwany błąd serwera</response>
         </member>
+        <member name="M:TodosController.UpdateCompletion(System.Guid,TodoTaskAPI.Application.DTOs.UpdateTodoCompletionDto)">
+            <summary>
+            Updates the completion percentage of a todo
+            </summary>
+            <remarks>
+            Sample request:
+            
+                PATCH /api/todos/{id}/completion
+                {
+                    "percentComplete": 75
+                }
+            
+            When percentComplete reaches 100, todo is automatically marked as done
+            </remarks>
+            <param name="id">ID of todo to update</param>
+            <param name="updateDto">Update data</param>
+            <returns>Updated todo item</returns>
+            <response code="200">Returns the updated todo</response>
+            <response code="400">If the update data is invalid</response>
+            <response code="404">If todo with specified ID is not found</response>
+            <response code="500">If there was an internal server error</response>
+        </member>
+        <member name="M:TodosController.UpdateDoneStatus(System.Guid,TodoTaskAPI.Application.DTOs.UpdateTodoDoneStatusDto)">
+            <summary>
+            Updates the done status of a todo
+            </summary>
+            <remarks>
+            Sample request:
+            
+                PATCH /api/todos/{id}/done
+                {
+                    "isDone": true
+                }
+            
+            When isDone is true, percentComplete is set to 100
+            When isDone is false, percentComplete is reset to 0
+            </remarks>
+            <param name="id">ID of todo to update</param>
+            <param name="updateDto">Update data</param>
+            <returns>Updated todo item</returns>
+            <response code="200">Returns the updated todo</response>
+            <response code="400">If the update data is invalid</response>
+            <response code="404">If todo with specified ID is not found</response>
+            <response code="500">If there was an internal server error</response>
+        </member>
         <member name="T:ValidationErrorResponse">
             <summary>
             Response model for validation errors
             </summary>
+        </member>
+        <member name="T:TodoTaskAPI.API.Middleware.ErrorHandlingMiddleware">
+            <summary>
+            Middleware responsible for handling exceptions globally within the application pipeline.
+            Ensures that all exceptions are logged and proper HTTP responses are sent back to the client.
+            </summary>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.ErrorHandlingMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILogger{TodoTaskAPI.API.Middleware.ErrorHandlingMiddleware})">
+            <summary>
+            Initializes a new instance of the <see cref="T:TodoTaskAPI.API.Middleware.ErrorHandlingMiddleware"/> class.
+            </summary>
+            <param name="next">The next middleware in the HTTP request pipeline.</param>
+            <param name="logger">Logger to capture exception details.</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.ErrorHandlingMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Middleware entry point, called for each HTTP request.
+            Wraps the execution of the pipeline with a try-catch block to handle exceptions.
+            </summary>
+            <param name="context">The current HTTP context.</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.ErrorHandlingMiddleware.HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception)">
+            <summary>
+            Handles the serialization of exceptions into a standardized JSON response.
+            </summary>
+            <param name="context">The current HTTP context.</param>
+            <param name="exception">The exception to handle.</param>
         </member>
         <member name="T:TodoTaskAPI.API.Middleware.RateLimitingMiddleware">
             <summary>
@@ -231,6 +303,26 @@
             <summary>
             Refills the bucket with tokens based on the elapsed time.
             </summary>
+        </member>
+        <member name="T:TodoTaskAPI.API.Middleware.RequestLoggingMiddleware">
+            <summary>
+            Middleware for logging details of each HTTP request and its response.
+            Provides insights into request duration, request data, and response status.
+            </summary>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RequestLoggingMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Logging.ILogger{TodoTaskAPI.API.Middleware.RequestLoggingMiddleware})">
+            <summary>
+            Initializes a new instance of the <see cref="T:TodoTaskAPI.API.Middleware.RequestLoggingMiddleware"/> class.
+            </summary>
+            <param name="next">The next middleware in the HTTP request pipeline.</param>
+            <param name="logger">Logger instance for capturing request details.</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Middleware.RequestLoggingMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+            <summary>
+            Middleware entry point, called for each HTTP request.
+            Logs request details and measures the time taken to process the request.
+            </summary>
+            <param name="context">The current HTTP context.</param>
         </member>
         <member name="T:TodoTaskAPI.API.Swagger.EnumSchemaFilter">
             <summary>
