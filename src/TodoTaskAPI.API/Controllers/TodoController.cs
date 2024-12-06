@@ -165,8 +165,10 @@ public class TodosController : ControllerBase
             _logger.LogInformation("Starting todo search with parameters: ID: {Id}, Title: {Title}",
                 parameters.Id, parameters.Title);
 
+            // Call the FindTodosAsync method in the TodoService to retrieve the matching todos
             var todos = await _todoService.FindTodosAsync(parameters);
 
+            // If no todos were found, return a NotFound response
             if (!todos.Any())
             {
                 return NotFound(ApiResponseDto<IEnumerable<TodoDto>>.Failure(
@@ -174,13 +176,14 @@ public class TodosController : ControllerBase
                     "No todos found matching the specified criteria",
                     todos));
             }
-
+            // If todos were found, return a successful response with the list of todos
             return Ok(ApiResponseDto<IEnumerable<TodoDto>>.Success(
                 todos,
                 "Successfully retrieved matching todos"));
         }
         catch (TodoTaskAPI.Core.Exceptions.ValidationException ex)
         {
+            // If a validation exception occurs, log the error and return a BadRequest response
             _logger.LogWarning(ex, "Validation error in FindTodos endpoint");
             return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
                 StatusCodes.Status400BadRequest,
@@ -195,6 +198,7 @@ public class TodosController : ControllerBase
         }
         catch (Exception ex)
         {
+            // If an unexpected exception occurs, log the error and return a InternalServerError response
             _logger.LogError(ex, "Unexpected error in FindTodos endpoint");
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
@@ -241,6 +245,7 @@ public class TodosController : ControllerBase
             // Model state validation block - validates incoming DTO against data annotations
             if (!ModelState.IsValid)
             {
+                // If the model state is invalid, extract the validation errors and log them
                 var validationErrors = ModelState
                     .Where(x => x.Value?.Errors.Any() == true)
                     .ToDictionary(
@@ -249,18 +254,19 @@ public class TodosController : ControllerBase
                     );
 
                 _logger.LogWarning("Model validation failed for todo creation. Errors: {@ValidationErrors}", validationErrors);
-
+                // Return a BadRequest response with the validation errors
                 return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
                     StatusCodes.Status400BadRequest,
                     "One or more validation errors occurred",
                     new ValidationErrorResponse { Errors = validationErrors }
                 ));
             }
-
+            // Call the CreateTodoAsync method in the TodoService to create the new todo
             var todo = await _todoService.CreateTodoAsync(createTodoDto);
 
             _logger.LogInformation("Successfully created todo with ID: {TodoId}", todo.Id);
 
+            // Return a Created response with the newly created todo
             return Created(
                 $"api/todos/{todo.Id}",
                 ApiResponseDto<TodoDto>.Success(
@@ -270,6 +276,7 @@ public class TodosController : ControllerBase
         }
         catch (TodoTaskAPI.Core.Exceptions.ValidationException ex)
         {
+            // If a validation exception occurs, log the error and return a BadRequest response
             _logger.LogWarning(ex, "Validation error occurred");
             return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
                 StatusCodes.Status400BadRequest,
@@ -284,6 +291,7 @@ public class TodosController : ControllerBase
         }
         catch (Exception ex)
         {
+            // If an unexpected exception occurs, log the error and return a InternalServerError response
             _logger.LogError(ex, "Unexpected error creating todo");
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
@@ -479,7 +487,174 @@ public class TodosController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Updates the completion percentage of a todo
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     PATCH /api/todos/{id}/completion
+    ///     {
+    ///         "percentComplete": 75
+    ///     }
+    /// 
+    /// When percentComplete reaches 100, todo is automatically marked as done
+    /// </remarks>
+    /// <param name="id">ID of todo to update</param>
+    /// <param name="updateDto">Update data</param>
+    /// <returns>Updated todo item</returns>
+    /// <response code="200">Returns the updated todo</response>
+    /// <response code="400">If the update data is invalid</response>
+    /// <response code="404">If todo with specified ID is not found</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpPatch("{id}/completion")]
+    [ProducesResponseType(typeof(ApiResponseDto<TodoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto<ValidationErrorResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponseDto<TodoDto>>> UpdateCompletion(Guid id, UpdateTodoCompletionDto updateDto)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo completion update for ID: {TodoId}", id);
 
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                    StatusCodes.Status400BadRequest,
+                    "Validation failed",
+                    new ValidationErrorResponse
+                    {
+                        Errors = ModelState.ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                        )
+                    }
+                ));
+            }
+
+            var updatedTodo = await _todoService.UpdateTodoCompletionAsync(id, updateDto);
+
+            return Ok(ApiResponseDto<TodoDto>.Success(
+                updatedTodo,
+                $"Todo completion updated successfully. {(updatedTodo.IsDone ? "Todo marked as done." : "")}"));
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error occurred during completion update");
+            return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                StatusCodes.Status400BadRequest,
+                ex.Message,
+                new ValidationErrorResponse
+                {
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Validation", new[] { ex.Message } }
+                    }
+                }));
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Todo not found during completion update");
+            return NotFound(ApiResponseDto<object>.Failure(
+                StatusCodes.Status404NotFound,
+                ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating todo completion");
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponseDto<object>.Failure(
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred while updating the todo completion"));
+        }
+    }
+
+    /// <summary>
+    /// Updates the done status of a todo
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     PATCH /api/todos/{id}/done
+    ///     {
+    ///         "isDone": true
+    ///     }
+    /// 
+    /// When isDone is true, percentComplete is set to 100
+    /// When isDone is false, percentComplete is reset to 0
+    /// </remarks>
+    /// <param name="id">ID of todo to update</param>
+    /// <param name="updateDto">Update data</param>
+    /// <returns>Updated todo item</returns>
+    /// <response code="200">Returns the updated todo</response>
+    /// <response code="400">If the update data is invalid</response>
+    /// <response code="404">If todo with specified ID is not found</response>
+    /// <response code="500">If there was an internal server error</response>
+    [HttpPatch("{id}/done")]
+    [ProducesResponseType(typeof(ApiResponseDto<TodoDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto<ValidationErrorResponse>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ApiResponseDto<TodoDto>>> UpdateDoneStatus(Guid id, UpdateTodoDoneStatusDto updateDto)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo done status update for ID: {TodoId}", id);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                    StatusCodes.Status400BadRequest,
+                    "Validation failed",
+                    new ValidationErrorResponse
+                    {
+                        Errors = ModelState.ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
+                        )
+                    }
+                ));
+            }
+
+            var updatedTodo = await _todoService.UpdateTodoDoneStatusAsync(id, updateDto);
+
+            return Ok(ApiResponseDto<TodoDto>.Success(
+                updatedTodo,
+                $"Todo {(updateDto.IsDone ? "marked as done" : "unmarked as done")}"));
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation error occurred during done status update");
+            return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
+                StatusCodes.Status400BadRequest,
+                ex.Message,
+                new ValidationErrorResponse
+                {
+                    Errors = new Dictionary<string, string[]>
+                    {
+                        { "Validation", new[] { ex.Message } }
+                    }
+                }));
+        }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Todo not found during done status update");
+            return NotFound(ApiResponseDto<object>.Failure(
+                StatusCodes.Status404NotFound,
+                ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating todo done status");
+            return StatusCode(
+                StatusCodes.Status500InternalServerError,
+                ApiResponseDto<object>.Failure(
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred while updating the todo done status"));
+        }
+    }
 
 }
 

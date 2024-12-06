@@ -29,7 +29,7 @@ public class TodoRepository : ITodoRepository
     public async Task<IEnumerable<Todo>> GetAllAsync()
     {
         return await _context.Todos
-            .OrderByDescending(t => t.ExpiryDateTime)
+            .OrderBy(t => t.ExpiryDateTime)
             .ToListAsync();
     }
 
@@ -39,7 +39,7 @@ public class TodoRepository : ITodoRepository
         var totalCount = await _context.Todos.CountAsync();
 
         var items = await _context.Todos
-            .OrderByDescending(t => t.ExpiryDateTime)
+            .OrderBy(t => t.ExpiryDateTime)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -233,15 +233,15 @@ public class TodoRepository : ITodoRepository
             _context.Todos.Remove(todo);
             await _context.SaveChangesAsync();
         }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            _logger.LogError(ex, "Błąd aktualizacji concurrency podczas usuwania todo o ID: {TodoId}", todo.Id);
-            throw new Exception("Wystąpił błąd aktualizacji concurrency podczas usuwania todo.", ex);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Błąd podczas usuwania todo o ID: {TodoId}", todo.Id);
-            throw;
-        }
+         catch (DbUpdateConcurrencyException ex)
+    {
+        _logger.LogError(ex, "Błąd aktualizacji concurrency podczas usuwania todo o ID: {TodoId}", todo.Id);
+        throw new Exception("Wystąpił błąd aktualizacji concurrency podczas usuwania todo.", ex);
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Błąd podczas usuwania todo o ID: {TodoId}", todo.Id);
+        throw;
+    }
     }
 }

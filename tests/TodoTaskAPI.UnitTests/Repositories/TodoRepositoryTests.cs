@@ -49,7 +49,7 @@ namespace TodoTaskAPI.UnitTests.Repositories
             // Assert
             var todos = result.ToList();
             Assert.Equal(3, todos.Count);
-            Assert.True(todos[0].ExpiryDateTime >= todos[1].ExpiryDateTime);
+            Assert.True(todos[0].ExpiryDateTime <= todos[1].ExpiryDateTime);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace TodoTaskAPI.UnitTests.Repositories
         /// Verifies that repository correctly sorts todos by expiry date in descending order
         /// </summary>
         [Fact]
-        public async Task GetAllAsync_ReturnsTodosOrderedByExpiryDateDescending()
+        public async Task GetAllAsync_ReturnsTodosOrderedByExpiryDate()
         {
             // Arrange
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -136,7 +136,7 @@ namespace TodoTaskAPI.UnitTests.Repositories
             // Assert
             for (int i = 0; i < result.Count - 1; i++)
             {
-                Assert.True(result[i].ExpiryDateTime >= result[i + 1].ExpiryDateTime);
+                Assert.True(result[i].ExpiryDateTime <= result[i + 1].ExpiryDateTime);
             }
         }
 

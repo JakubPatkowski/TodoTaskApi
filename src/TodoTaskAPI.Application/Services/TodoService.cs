@@ -74,8 +74,7 @@ public class TodoService : ITodoService
         };
     }
 
-    // src/TodoTaskAPI.Application/Services/TodoService.cs
-    // Add this method to the TodoService class
+
     /// <summary>
     /// Finds specific todos based on search parameters with validation
     /// </summary>
@@ -350,6 +349,77 @@ public class TodoService : ITodoService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Błąd podczas usuwania todo o ID: {TodoId}", id);
+            throw;
+        }
+    }
+
+    public async Task<TodoDto> UpdateTodoCompletionAsync(Guid id, UpdateTodoCompletionDto updateDto)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo completion update for ID: {TodoId}", id);
+
+            var todo = await _todoRepository.GetByIdAsync(id);
+            if (todo == null)
+            {
+                throw new NotFoundException($"Todo with ID {id} not found");
+            }
+
+            // Update completion percentage
+            todo.PercentComplete = updateDto.PercentComplete;
+
+            // Automatically mark as done if 100% complete
+            if (todo.PercentComplete == 100)
+            {
+                todo.IsDone = true;
+            }
+
+            var updatedTodo = await _todoRepository.UpdateAsync(todo);
+            _logger.LogInformation("Successfully updated todo completion with ID: {TodoId}", id);
+
+            return MapToDto(updatedTodo);
+        }
+        catch (NotFoundException)
+        {
+            _logger.LogWarning("Todo not found during completion update: {TodoId}", id);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating todo completion: {TodoId}", id);
+            throw;
+        }
+    }
+
+    public async Task<TodoDto> UpdateTodoDoneStatusAsync(Guid id, UpdateTodoDoneStatusDto updateDto)
+    {
+        try
+        {
+            _logger.LogInformation("Starting todo done status update for ID: {TodoId}", id);
+
+            var todo = await _todoRepository.GetByIdAsync(id);
+            if (todo == null)
+            {
+                throw new NotFoundException($"Todo with ID {id} not found");
+            }
+
+            // Update done status and set completion accordingly
+            todo.IsDone = updateDto.IsDone;
+            todo.PercentComplete = updateDto.IsDone ? 100 : 0;
+
+            var updatedTodo = await _todoRepository.UpdateAsync(todo);
+            _logger.LogInformation("Successfully updated todo done status with ID: {TodoId}", id);
+
+            return MapToDto(updatedTodo);
+        }
+        catch (NotFoundException)
+        {
+            _logger.LogWarning("Todo not found during done status update: {TodoId}", id);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while updating todo done status: {TodoId}", id);
             throw;
         }
     }
