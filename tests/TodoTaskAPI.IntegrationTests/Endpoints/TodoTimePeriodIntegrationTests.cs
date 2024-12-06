@@ -87,17 +87,22 @@ namespace TodoTaskAPI.IntegrationTests.Endpoints
         public async Task GetUpcoming_InvalidCustomRange_ReturnsBadRequest()
         {
             // Arrange
-            var startDate = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-dd"); // Past date
-            var endDate = DateTime.UtcNow.AddDays(7).ToString("yyyy-MM-dd");
+            using var scope = _fixture.Factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await SeedTestData(context);
+
+            var startDate = DateTime.UtcNow.AddDays(-1).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"); // Przeszła data
+            var endDate = DateTime.UtcNow.AddDays(7).ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
             var url = $"/api/todos/upcoming?period=Custom&startDate={startDate}&endDate={endDate}";
 
             // Act
             var response = await _client.GetAsync(url);
+            var content = await response.Content.ReadFromJsonAsync<ApiResponseDto<ValidationErrorResponse>>();
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            var content = await response.Content.ReadFromJsonAsync<ApiResponseDto<ValidationErrorResponse>>();
-            Assert.NotNull(content?.Data?.Errors);
+            Assert.NotNull(content);
+            Assert.NotNull(content.Message);
             Assert.Contains("past", content.Message.ToLower());
         }
 

@@ -45,7 +45,22 @@ namespace TodoTaskAPI.Core.Interfaces
         /// <summary>
         /// Adds a new todo to the database
         /// </summary>
+        /// 
         Task<Todo> AddAsync(Todo todo);
+
+        /// <summary>
+        /// Updates an existing todo in the database
+        /// </summary>
+        /// <param name="todo">Todo entity to update</param>
+        /// <returns>Updated todo entity</returns>
+        Task<Todo> UpdateAsync(Todo todo);
+
+        /// <summary>
+        /// Gets a specific todo by ID
+        /// </summary>
+        /// <param name="id">Todo ID</param>
+        /// <returns>Todo entity if found, null if not found</returns>
+        Task<Todo?> GetByIdAsync(Guid id);
     }
 }
 

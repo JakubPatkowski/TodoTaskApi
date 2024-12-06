@@ -161,4 +161,64 @@ public class TodoRepository : ITodoRepository
             throw;
         }
     }
+
+    /// <summary>
+    /// Updates an existing todo with proper error handling and transaction management
+    /// </summary>
+    /// <param name="todo">Todo entity to update</param>
+    /// <returns>Updated todo entity</returns>
+    /// <exception cref="DbUpdateException">Thrown when database update fails</exception>
+    public async Task<Todo> UpdateAsync(Todo todo)
+    {
+        try
+        {
+            todo.UpdatedAt = DateTime.UtcNow;
+
+            if (_context.Database.ProviderName?.Contains("InMemory") ?? false)
+            {
+                _context.Todos.Update(todo);
+                await _context.SaveChangesAsync();
+                return todo;
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.Todos.Update(todo);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("Successfully updated todo with ID: {TodoId}", todo.Id);
+                return todo;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Failed to update todo in database");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Gets a specific todo by ID with error handling
+    /// </summary>
+    /// <param name="id">Todo ID to find</param>
+    /// <returns>Todo entity if found, null if not found</returns>
+    public async Task<Todo?> GetByIdAsync(Guid id)
+    {
+        try
+        {
+            return await _context.Todos.FirstOrDefaultAsync(t => t.Id == id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving todo with ID: {TodoId}", id);
+            throw;
+        }
+    }
 }

@@ -99,6 +99,32 @@
             <response code="400">If the parameters are invalid</response>
             <response code="500">If there was an internal server error</response>
         </member>
+        <member name="M:TodosController.Update(System.Guid,TodoTaskAPI.Application.DTOs.UpdateTodoDto)">
+            <summary>
+            Updates an existing todo item
+            </summary>
+            <remarks>
+            Sample request:
+            
+                PUT /api/todos/{id}
+                {
+                    "title": "Updated title",
+                    "description": "Updated description",
+                    "expiryDateTime": "2024-12-31T23:59:59Z",
+                    "percentComplete": 50,
+                    "isDone": false
+                }
+            
+            Only provide the properties you want to update. Omitted properties will remain unchanged.
+            </remarks>
+            <param name="id">ID of todo to update</param>
+            <param name="updateTodoDto">Update data</param>
+            <returns>Updated todo item</returns>
+            <response code="200">Returns the updated todo</response>
+            <response code="400">If the update data is invalid</response>
+            <response code="404">If todo with specified ID is not found</response>
+            <response code="500">If there was an internal server error</response>
+        </member>
         <member name="T:ValidationErrorResponse">
             <summary>
             Response model for validation errors
