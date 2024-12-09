@@ -118,22 +118,16 @@ namespace TodoTaskAPI.IntegrationTests.Infrastructure
             await _dbContainer.DisposeAsync();
         }
 
-        // Helper do czyszczenia bazy między testami
         public async Task CleanDatabaseAsync()
         {
-            var retryPolicy = Policy
-                .Handle<Exception>()
-                .WaitAndRetryAsync(5,
-                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            using var scope = Factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            await retryPolicy.ExecuteAsync(async () =>
-            {
-                using var scope = Factory.Services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await db.Database.EnsureDeletedAsync();
-                await db.Database.MigrateAsync();
-                await DbInitializer.Initialize(db, seedTestData: false);
-            });
+            // Resetujemy bazę danych
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.MigrateAsync();
         }
+
+
     }
 }

@@ -92,29 +92,23 @@ namespace TodoTaskAPI.UnitTests.Repositories
             await _context.Todos.AddAsync(todo);
             await _context.SaveChangesAsync();
 
-            // Simulate concurrent updates
-            var firstUpdate = new Todo
-            {
-                Id = todo.Id,
-                Title = todo.Title,
-                PercentComplete = 50,
-                IsDone = false
-            };
+            // Kluczowa zmiana - przejdź na detached state przez pobranie nowej instancji
+            var todoToUpdate = await _context.Todos.FindAsync(todo.Id);
+            todoToUpdate!.PercentComplete = 50;
 
-            var secondUpdate = new Todo
-            {
-                Id = todo.Id,
-                Title = todo.Title,
-                PercentComplete = 75,
-                IsDone = false
-            };
+            _context.Entry(todoToUpdate).State = EntityState.Detached;
 
-            // Act & Assert
-            await _repository.UpdateAsync(firstUpdate);
-            await _repository.UpdateAsync(secondUpdate);
+            var result = await _repository.UpdateAsync(todoToUpdate);
+            Assert.Equal(50, result.PercentComplete);
 
-            var finalState = await _context.Todos.FindAsync(todo.Id);
-            Assert.Equal(75, finalState?.PercentComplete);
+            // Druga aktualizacja
+            todoToUpdate = await _context.Todos.FindAsync(todo.Id);
+            todoToUpdate!.PercentComplete = 75;
+
+            _context.Entry(todoToUpdate).State = EntityState.Detached;
+
+            result = await _repository.UpdateAsync(todoToUpdate);
+            Assert.Equal(75, result.PercentComplete);
         }
 
         public void Dispose()

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TodoTaskAPI.Application.DTOs;
 using Xunit.Abstractions;
 using Xunit;
+using System.Net;
 
 namespace TodoTaskAPI.IntegrationTests.Infrastructure
 {
@@ -110,16 +111,13 @@ namespace TodoTaskAPI.IntegrationTests.Infrastructure
         /// Tests input validation in real environment
         /// </summary>
         [Theory]
-        [InlineData(-1)]    // Below minimum
-        [InlineData(101)]   // Above maximum
+        [InlineData(-1)]
+        [InlineData(101)]
         public async Task UpdateCompletion_EndToEnd_ValidatesInput(int invalidPercentage)
         {
             // Arrange
             var todo = await CreateTestTodo("Validation Test Todo");
-            var updateDto = new UpdateTodoCompletionDto
-            {
-                PercentComplete = invalidPercentage
-            };
+            var updateDto = new UpdateTodoCompletionDto { PercentComplete = invalidPercentage };
 
             // Act
             var response = await _client.PatchAsync(
@@ -127,11 +125,22 @@ namespace TodoTaskAPI.IntegrationTests.Infrastructure
                 JsonContent.Create(updateDto));
 
             // Assert
-            Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
-            var error = await response.Content
-                .ReadFromJsonAsync<ApiResponseDto<ValidationErrorResponse>>();
-            Assert.NotNull(error);
-            Assert.Contains("PercentComplete", error.Message);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            _output.WriteLine($"Response content: {content}");
+
+            var errorResponse = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+            Assert.NotNull(errorResponse);
+            Assert.Contains("PercentComplete", content);
+        }
+
+        public class ProblemDetails
+        {
+            public string? Type { get; set; }
+            public string? Title { get; set; }
+            public int Status { get; set; }
+            public Dictionary<string, string[]>? Errors { get; set; }
         }
 
         /// <summary>

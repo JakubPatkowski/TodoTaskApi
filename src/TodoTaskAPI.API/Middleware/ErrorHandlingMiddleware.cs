@@ -59,8 +59,6 @@ namespace TodoTaskAPI.API.Middleware
             }
         }
 
-
-
         /// <summary>
         /// Handles the serialization of exceptions into a standardized JSON response.
         /// </summary>

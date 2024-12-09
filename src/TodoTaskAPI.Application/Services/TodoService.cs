@@ -35,52 +35,82 @@ public class TodoService : ITodoService
     }
 
     /// <inheritdoc/>
+    /// <exception cref="Exception">Thrown when repository operation fails</exception>
     public async Task<IEnumerable<TodoDto>> GetAllTodosAsync()
     {
-        var todos = await _todoRepository.GetAllAsync();
-        return todos.Select(MapToDto);
+        try
+        {
+            // Retrieve all todos from repository
+            _logger.LogInformation("Retrieving all todos");
+            var todos = await _todoRepository.GetAllAsync();
+
+            // Map entities to DTOs before returning
+            return todos.Select(MapToDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to retrieve all todos");
+            throw;
+        }
     }
 
     /// <inheritdoc/>
+    /// <exception cref="ValidationException">Thrown when pagination parameters are invalid</exception>
+    /// <exception cref="Exception">Thrown when database operation fails</exception>
     public async Task<PaginatedResponseDto<TodoDto>> GetAllTodosWithPaginationAsync(PaginationParametersDto parameters)
     {
-        // Validate parameters are not null
-        if (!parameters.PageNumber.HasValue || !parameters.PageSize.HasValue)
+        try
         {
-            throw new ValidationException("Pagination parameters cannot be null");
+            // Validate input parameters
+            if (!parameters.PageNumber.HasValue || !parameters.PageSize.HasValue)
+            {
+                _logger.LogWarning("Invalid pagination parameters provided");
+                throw new ValidationException("Pagination parameters cannot be null");
+            }
+
+            // Retrieve paginated data from repository
+            var (todos, totalCount) = await _todoRepository.GetAllWithPaginationAsync(
+                parameters.PageNumber.Value,
+                parameters.PageSize.Value
+            );
+
+            // Calculate pagination metadata
+            var totalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize.Value);
+            var currentPage = parameters.PageNumber.Value;
+
+            _logger.LogInformation(
+                "Retrieved page {CurrentPage} of {TotalPages} (Total items: {TotalCount})",
+                currentPage, totalPages, totalCount);
+
+            // Build and return paginated response with mapped DTOs
+            return new PaginatedResponseDto<TodoDto>
+            {
+                Items = todos.Select(MapToDto),
+                PageNumber = currentPage,
+                PageSize = parameters.PageSize.Value,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                HasNextPage = currentPage < totalPages,
+                HasPreviousPage = currentPage > 1
+            };
         }
-
-        // Get data from repository
-        var (todos, totalCount) = await _todoRepository.GetAllWithPaginationAsync(
-            parameters.PageNumber.Value,
-            parameters.PageSize.Value
-        );
-
-        // Calculate total pages
-        var totalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize.Value);
-
-
-
-        // Create and return paginated response
-        return new PaginatedResponseDto<TodoDto>
+        catch (ValidationException)
         {
-            Items = todos.Select(MapToDto),
-            PageNumber = parameters.PageNumber.Value,
-            PageSize = parameters.PageSize.Value,
-            TotalPages = totalPages,
-            TotalCount = totalCount,
-            HasNextPage = parameters.PageNumber < totalPages,
-            HasPreviousPage = parameters.PageNumber > 1
-        };
+            // Rethrow validation exceptions for proper handling
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to retrieve paginated todos. Page: {Page}, Size: {Size}",
+                parameters.PageNumber, parameters.PageSize);
+            throw;
+        }
     }
 
 
-    /// <summary>
-    /// Finds specific todos based on search parameters with validation
-    /// </summary>
-    /// <param name="parameters">Search parameters</param>
-    /// <returns>Collection of matching todo DTOs</returns>
+    /// <inheritdoc/>
     /// <exception cref="ValidationException">Thrown when parameters are invalid</exception>
+    /// <exception cref="Exception">Thrown when database query fails</exception>
     public async Task<IEnumerable<TodoDto>> FindTodosAsync(TodoSearchParametersDto parameters)
     {
         try
@@ -106,11 +136,7 @@ public class TodoService : ITodoService
         }
     }
 
-    /// <summary>
-    /// Creates a new todo item with validation
-    /// </summary>
-    /// <param name="createTodoDto">Data for creating new todo</param>
-    /// <returns>Created todo as DTO</returns>
+    /// <inheritdoc/>
     /// <exception cref="ValidationException">Thrown when business validation fails</exception>
     /// <exception cref="ApplicationException">Thrown when unexpected errors occur during creation</exception>
     public async Task<TodoDto> CreateTodoAsync(CreateTodoDto createTodoDto)
@@ -159,8 +185,13 @@ public class TodoService : ITodoService
     /// <summary>
     /// Validates business rules for todo creation
     /// </summary>
-    /// <param name="dto">Todo creation data</param>
-    /// <returns>List of validation errors</returns>
+    /// <param name="dto">Todo creation DTO containing data to validate</param>
+    /// <returns>List of validation errors, empty if validation passes</returns>
+    /// <remarks>
+    /// Current business rules:
+    /// - ExpiryDateTime must be in the future
+    /// - Additional rules can be added here
+    /// </remarks>
     private List<string> ValidateBusinessRules(CreateTodoDto dto)
     {
         var errors = new List<string>();
@@ -171,14 +202,16 @@ public class TodoService : ITodoService
             errors.Add("ExpiryDateTime must be in the future.");
         }
 
+        // You can add more rules
+
         return errors;
     }
 
     /// <summary>
-    /// Maps Todo entity to TodoDto ensuring all properties are properly converted
+    /// Maps a Todo entity to a TodoDto
     /// </summary>
-    /// <param name="todo">Todo entity to map</param>
-    /// <returns>Mapped TodoDto object with consistent property formatting</returns>
+    /// <param name="todo">Todo entity to convert</param>
+    /// <returns>Mapped TodoDto with formatted data</returns>
     private static TodoDto MapToDto(Todo todo) => new()
     {
         Id = todo.Id,
@@ -191,27 +224,28 @@ public class TodoService : ITodoService
         UpdatedAt = todo.UpdatedAt
     };
 
-    /// <summary>
-    /// Gets todos within specified time period
-    /// </summary>
-    /// <param name="timePeriodDto">Time period parameters</param>
-    /// <returns>Collection of todos within the specified period</returns>
+    /// <inheritdoc/>
     /// <exception cref="ValidationException">Thrown when parameters are invalid</exception>
+    /// <exception cref="Exception">Thrown when database query fails</exception>
     public async Task<IEnumerable<TodoDto>> GetTodosByTimePeriodAsync(TodoTimePeriodParametersDto timePeriodDto)
     {
         try
         {
             _logger.LogInformation("Getting todos for period: {Period}", timePeriodDto.Period);
 
+            // Validate input parameters
             timePeriodDto.Validate();
 
+            // Calculate date range and retrieve todos
             var (startDate, endDate) = CalculateDateRange(timePeriodDto);
             var todos = await _todoRepository.GetTodosByDateRangeAsync(startDate, endDate);
 
+            // Map and return results
             return todos.Select(MapToDto);
         }
         catch (ValidationException)
         {
+            // Let validation exceptions propagate
             throw;
         }
         catch (Exception ex)
@@ -222,42 +256,48 @@ public class TodoService : ITodoService
     }
 
     /// <summary>
-    /// Calculates the date range based on the specified time period
+    /// Calculates start and end dates based on specified time period
     /// </summary>
-    /// <param name="timePeriodDto">Time period parameters</param>
-    /// <returns>Tuple containing start and end dates</returns>
+    /// <param name="timePeriodDto">Time period specification</param>
+    /// <returns>Tuple containing calculated start and end dates</returns>
+    /// <remarks>
+    /// Date ranges are inclusive of start date and exclusive of end date
+    /// All times are normalized to UTC
+    /// End date is set to end of day (23:59:59)
+    /// </remarks>
+    /// <exception cref="ValidationException">Thrown if period is invalid</exception>
     private static (DateTime StartDate, DateTime EndDate) CalculateDateRange(TodoTimePeriodParametersDto timePeriodDto)
     {
+        // Normalize to start of day in UTC
         var today = DateTime.UtcNow.Date;
 
+        // Calculate range based on period type
         return timePeriodDto.Period switch
         {
-            TodoTimePeriodParametersDto.TimePeriod.Today => (today, today),
+            TodoTimePeriodParametersDto.TimePeriod.Today => (
+                today,
+                today.AddDays(1).AddSeconds(-1)),
 
             TodoTimePeriodParametersDto.TimePeriod.Tomorrow => (
                 today.AddDays(1),
-                today.AddDays(1)),
+                today.AddDays(2).AddSeconds(-1)),
 
             TodoTimePeriodParametersDto.TimePeriod.CurrentWeek => (
                 today,
-                today.AddDays(6 - (int)today.DayOfWeek)),
+                today.AddDays(7).AddSeconds(-1)),
 
             TodoTimePeriodParametersDto.TimePeriod.Custom => (
                 timePeriodDto.StartDate!.Value.Date,
-                timePeriodDto.EndDate!.Value.Date),
+                timePeriodDto.EndDate!.Value.Date.AddDays(1).AddSeconds(-1)),
 
             _ => throw new ValidationException("Invalid time period specified")
         };
     }
 
-    /// <summary>
-    /// Updates an existing todo with validation and business rules
-    /// </summary>
-    /// <param name="id">ID of todo to update</param>
-    /// <param name="updateTodoDto">Update data</param>
-    /// <returns>Updated todo as DTO</returns>
+    /// <inheritdoc/>
     /// <exception cref="ValidationException">Thrown when validation fails</exception>
     /// <exception cref="NotFoundException">Thrown when todo is not found</exception>
+    /// <exception cref="Exception">Thrown when database update fails</exception>
     public async Task<TodoDto> UpdateTodoAsync(Guid id, UpdateTodoDto updateTodoDto)
     {
         try
@@ -267,7 +307,7 @@ public class TodoService : ITodoService
             // Validate that at least one property is being updated
             updateTodoDto.ValidateAtLeastOnePropertySet();
 
-            // Get existing todo
+            // Fetch and verify todo exists
             var todo = await _todoRepository.GetByIdAsync(id);
             if (todo == null)
             {
@@ -304,6 +344,7 @@ public class TodoService : ITodoService
                 }
             }
 
+            // Save changes
             var updatedTodo = await _todoRepository.UpdateAsync(todo);
             _logger.LogInformation("Successfully updated todo with ID: {TodoId}", id);
 
@@ -327,22 +368,23 @@ public class TodoService : ITodoService
     }
 
 
-    /// <summary>
-    /// Delete specific Todo
-    /// </summary>
-    /// <param name="id">ID todo do usunięcia</param>
+    /// <inheritdoc/>
     /// <exception cref="NotFoundException">Wyrzucany, gdy todo nie zostanie znalezione</exception>
+    /// <exception cref="Exception">Thrown when delete operation fails</exception>
     public async Task DeleteTodoAsync(Guid id)
     {
         try
         {
             _logger.LogInformation("Rozpoczynanie usuwania todo o ID: {TodoId}", id);
+
+            // Verify todo exists before deletion
             var todo = await _todoRepository.GetByIdAsync(id);
             if (todo == null)
             {
                 throw new NotFoundException($"Todo o ID {id} nie został znaleziony.");
             }
 
+            // Perform deletion
             await _todoRepository.DeleteAsync(todo);
             _logger.LogInformation("Pomyślnie usunięto todo o ID: {TodoId}", id);
         }
@@ -353,60 +395,63 @@ public class TodoService : ITodoService
         }
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="NotFoundException">Thrown when todo not found</exception>
+    /// <exception cref="Exception">Thrown when update fails</exception>
     public async Task<TodoDto> UpdateTodoCompletionAsync(Guid id, UpdateTodoCompletionDto updateDto)
     {
         try
         {
-            _logger.LogInformation("Starting todo completion update for ID: {TodoId}", id);
-
+            // Retrieve and verify todo exists
             var todo = await _todoRepository.GetByIdAsync(id);
             if (todo == null)
             {
                 throw new NotFoundException($"Todo with ID {id} not found");
             }
 
-            // Update completion percentage
+            // Update completion status
             todo.PercentComplete = updateDto.PercentComplete;
 
-            // Automatically mark as done if 100% complete
-            if (todo.PercentComplete == 100)
-            {
-                todo.IsDone = true;
-            }
+            // Auto-update done status based on completion
+            todo.IsDone = todo.PercentComplete == 100;
 
+            // Save changes
             var updatedTodo = await _todoRepository.UpdateAsync(todo);
-            _logger.LogInformation("Successfully updated todo completion with ID: {TodoId}", id);
-
             return MapToDto(updatedTodo);
         }
         catch (NotFoundException)
         {
-            _logger.LogWarning("Todo not found during completion update: {TodoId}", id);
+            _logger.LogWarning("Todo not found during done status update: {TodoId}", id);
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while updating todo completion: {TodoId}", id);
+            _logger.LogError(ex, "Error updating todo completion: {TodoId}", id);
             throw;
         }
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="NotFoundException">Thrown when todo not found</exception>
+    /// <exception cref="Exception">Thrown when update fails</exception>
     public async Task<TodoDto> UpdateTodoDoneStatusAsync(Guid id, UpdateTodoDoneStatusDto updateDto)
     {
         try
         {
             _logger.LogInformation("Starting todo done status update for ID: {TodoId}", id);
 
+            // Retrieve and verify todo exists 
             var todo = await _todoRepository.GetByIdAsync(id);
             if (todo == null)
             {
                 throw new NotFoundException($"Todo with ID {id} not found");
             }
 
-            // Update done status and set completion accordingly
+            // Update done status and set completion percentage
             todo.IsDone = updateDto.IsDone;
             todo.PercentComplete = updateDto.IsDone ? 100 : 0;
 
+            // Save changes
             var updatedTodo = await _todoRepository.UpdateAsync(todo);
             _logger.LogInformation("Successfully updated todo done status with ID: {TodoId}", id);
 

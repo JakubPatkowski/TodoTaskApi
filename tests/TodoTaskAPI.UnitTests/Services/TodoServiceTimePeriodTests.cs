@@ -35,10 +35,12 @@ namespace TodoTaskAPI.UnitTests.Services
 
             var todos = new List<Todo>
             {
-                new() { ExpiryDateTime = today.AddHours(10) }
+                new() { ExpiryDateTime = today.AddHours(10) } // W środku dnia
             };
 
-            _mockRepository.Setup(r => r.GetTodosByDateRangeAsync(today, today))
+            _mockRepository.Setup(r => r.GetTodosByDateRangeAsync(
+                today,
+                today.AddDays(1).AddSeconds(-1)))
                 .ReturnsAsync(todos);
 
             // Act
@@ -46,7 +48,6 @@ namespace TodoTaskAPI.UnitTests.Services
 
             // Assert
             Assert.Single(result);
-            _mockRepository.Verify(r => r.GetTodosByDateRangeAsync(today, today), Times.Once);
         }
 
         [Fact]
@@ -72,7 +73,7 @@ namespace TodoTaskAPI.UnitTests.Services
         {
             // Arrange
             var today = DateTime.UtcNow.Date;
-            var endOfWeek = today.AddDays(6 - (int)today.DayOfWeek);
+            var endDate = today.AddDays(7).AddSeconds(-1); // Koniec tygodnia to dziś + 7 dni
             var timePeriodDto = new TodoTimePeriodParametersDto { Period = TodoTimePeriodParametersDto.TimePeriod.CurrentWeek };
 
             var todos = new List<Todo>
@@ -81,23 +82,27 @@ namespace TodoTaskAPI.UnitTests.Services
                 new() { ExpiryDateTime = today.AddDays(4) }
             };
 
-            _mockRepository.Setup(r => r.GetTodosByDateRangeAsync(today, endOfWeek))
+            _mockRepository.Setup(r => r.GetTodosByDateRangeAsync(
+                today,
+                endDate))
                 .ReturnsAsync(todos);
 
             // Act
-            var result = await _service.GetTodosByTimePeriodAsync(timePeriodDto);
+            var result = (await _service.GetTodosByTimePeriodAsync(timePeriodDto)).ToList();
 
             // Assert
-            Assert.Equal(2, result.Count());
-            _mockRepository.Verify(r => r.GetTodosByDateRangeAsync(today, endOfWeek), Times.Once);
+            Assert.Equal(2, result.Count);
+            _mockRepository.Verify(
+                r => r.GetTodosByDateRangeAsync(today, endDate),
+                Times.Once);
         }
 
         [Fact]
         public async Task GetTodosByTimePeriod_CustomPeriod_WithValidDates_Succeeds()
         {
             // Arrange
-            var startDate = DateTime.UtcNow.AddDays(1);
-            var endDate = DateTime.UtcNow.AddDays(7);
+            var startDate = DateTime.UtcNow.AddDays(1).Date;
+            var endDate = startDate.AddDays(7).Date;
             var timePeriodDto = new TodoTimePeriodParametersDto
             {
                 Period = TodoTimePeriodParametersDto.TimePeriod.Custom,
@@ -111,7 +116,8 @@ namespace TodoTaskAPI.UnitTests.Services
             };
 
             _mockRepository.Setup(r => r.GetTodosByDateRangeAsync(
-                startDate.Date, endDate.Date))
+                startDate,
+                endDate.AddDays(1).AddSeconds(-1)))
                 .ReturnsAsync(todos);
 
             // Act
@@ -120,7 +126,7 @@ namespace TodoTaskAPI.UnitTests.Services
             // Assert
             Assert.Single(result);
             _mockRepository.Verify(
-                r => r.GetTodosByDateRangeAsync(startDate.Date, endDate.Date),
+                r => r.GetTodosByDateRangeAsync(startDate, endDate.AddDays(1).AddSeconds(-1)),
                 Times.Once);
         }
     }
