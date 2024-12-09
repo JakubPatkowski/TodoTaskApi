@@ -5,6 +5,9 @@ using TodoTaskAPI.API;
 
 public partial class Program
 {
+    /// <summary>
+    /// Main entry point - configures and runs the application
+    /// </summary>
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +22,10 @@ public partial class Program
         app.Run();
     }
 
-    // Metoda dla testów integracyjnych
+    /// <summary>
+    /// Creates host builder for integration tests
+    /// Allows tests to customize application configuration
+    /// </summary>s
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>

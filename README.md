@@ -1,4 +1,3 @@
-
 # Todo Task API
 
 A REST API for managing todo tasks with support for pagination and rate limiting.
@@ -6,61 +5,100 @@ A REST API for managing todo tasks with support for pagination and rate limiting
 ## Features
 
 - Get all todos with pagination
-- Rate limiting using the token bucket algorithm
+- Get specific todo by ID or title
+- Get upcoming todos (today/next day/current week/custom)
+- Create new todos
+- Update existing todos
+- Update completion percentage
+- Mark todos as done
+- Delete todos
+- Rate limiting using token bucket algorithm
 - PostgreSQL database with Entity Framework Core
-- Docker support
 - Comprehensive test coverage
 - API documentation with Swagger
 
 ## Prerequisites
 
-- .NET 8.0
-- PostgreSQL
-- Docker (optional)
+- [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Docker](https://www.docker.com/products/docker-desktop/)
+- Docker Compose
 
-## Running the Application
+## Quick Start
 
-### Using Docker
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/JakubPatkowski/TodoTaskApi
+   cd TodoTaskApi
+   ```
 
-```bash
-docker-compose up
-```
+2. Build and run with Docker Compose:
+   ```bash
+   docker-compose up --build
+   ```
 
-### Local Development
+   - The API will be available at [http://localhost:5034](http://localhost:5034).
+   - Swagger documentation can be accessed at [http://localhost:5034/swagger](http://localhost:5034/swagger).
 
-1. Update the connection string in `appsettings.Development.json`.
-2. Run the application:
+## Development Setup
 
-```bash
-dotnet restore
-dotnet run --project src/TodoTaskAPI.API
-```
+If you want to run the project without Docker:
 
-## Running Tests
+1. Install PostgreSQL and create a database named TodoDb
 
-```bash
-dotnet test
-```
+2. Update the connection string in `appsettings.Development.json`:
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection":" 
+         Host=localhost;
+         Database=TodoDb;
+         Username=postgres;
+         Password=postgres"
+     }
+   }
+   ```
 
-## API Documentation
+3. Run the application:
+   ```bash
+   dotnet run --project src/TodoTaskAPI.API
+   ```
 
-Swagger documentation is available at `/swagger` when running the application.
+## Database
 
-## Architecture
+The application uses EF Core migrations and automatic database initialization. No manual migration steps are required as they are applied automatically on startup.
 
-The solution follows Clean Architecture principles:
+When the application starts for the first time, it will:
 
-- **API Layer:** REST API endpoints, middleware, configuration
-- **Application Layer:** DTOs, services, business logic
-- **Core Layer:** Entities, interfaces, domain logic
-- **Infrastructure Layer:** Database context, repositories, migrations
+- Create the database if it doesn't exist
+- Apply all migrations
+- Seed initial test data if the database is empty
 
-## Technologies
+## Testing
 
-- ASP.NET Core 8.0
-- Entity Framework Core
-- PostgreSQL
-- xUnit
-- Docker
-- Swagger/OpenAPI
+- Run all tests from solution root
+  ```bash
+  dotnet test TodoTaskApi.sln
+  ```
 
+- Run unit tests:
+  ```bash
+  dotnet test tests/TodoTaskAPI.UnitTests/TodoTaskAPI.UnitTests.csproj
+  ```
+
+- Run integration tests:
+  ```bash
+  dotnet test tests/TodoTaskAPI.IntegrationTests/TodoTaskAPI.IntegrationTests.csproj
+  ```
+
+## Project Structure
+
+- `src/TodoTaskAPI.API` - Web API layer
+- `src/TodoTaskAPI.Application` - Application services and DTOs
+- `src/TodoTaskAPI.Core` - Domain entities and interfaces
+- `src/TodoTaskAPI.Infrastructure` - Database and repositories
+- `tests/TodoTaskAPI.UnitTests` - Unit tests
+- `tests/TodoTaskAPI.IntegrationTests` - Integration tests
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

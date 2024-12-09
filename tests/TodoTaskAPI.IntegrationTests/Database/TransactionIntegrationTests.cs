@@ -20,9 +20,11 @@ namespace TodoTaskAPI.IntegrationTests.Database
     {
         private readonly HttpClient _client;
         private readonly ITestOutputHelper _output;
+        PostgreSqlContainerTest _fixture;
 
         public TransactionIntegrationTests(PostgreSqlContainerTest fixture, ITestOutputHelper output)
         {
+            _fixture = fixture;
             _client = fixture.Factory.CreateClient();
             _output = output;
         }
@@ -30,6 +32,9 @@ namespace TodoTaskAPI.IntegrationTests.Database
         [Fact]
         public async Task EndToEnd_LargeTransaction_MaintainsConsistency()
         {
+            // Najpierw czyścimy bazę danych
+            await _fixture.CleanDatabaseAsync();
+
             // Arrange - Create collection of todos
             var todos = Enumerable.Range(1, 100).Select(i => new CreateTodoDto
             {
@@ -43,25 +48,17 @@ namespace TodoTaskAPI.IntegrationTests.Database
             foreach (var todo in todos)
             {
                 var response = await _client.PostAsJsonAsync("/api/todos", todo);
-
-                // Log the response for each request
                 _output.WriteLine($"Response for Todo '{todo.Title}': {response.StatusCode}");
 
                 // Retry failed requests
                 if (!response.IsSuccessStatusCode)
                 {
-                    _output.WriteLine($"Retrying for Todo '{todo.Title}'...");
-                    await Task.Delay(200); // Wait before retrying
+                    await Task.Delay(200);
                     response = await _client.PostAsJsonAsync("/api/todos", todo);
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        _output.WriteLine($"Failed to add Todo '{todo.Title}' after retry.");
-                    }
                 }
 
-                // Add a delay between requests
-                await Task.Delay(100); // Adjust delay based on the API/database performance
+                Assert.True(response.IsSuccessStatusCode, $"Failed to create todo: {todo.Title}");
+                await Task.Delay(100);
             }
 
             // Assert - Verify that all todos were saved

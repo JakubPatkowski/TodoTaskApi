@@ -6,7 +6,6 @@ using TodoTaskAPI.Application.Interfaces;
 using TodoTaskAPI.Core.Exceptions;
 using ValidationException = TodoTaskAPI.Core.Exceptions.ValidationException;
 
-
 /// <summary>
 /// Controller handling CRUD operations for Todo items.
 /// Implements rate limiting, validation, and proper error handling.
@@ -18,7 +17,6 @@ public class TodosController : ControllerBase
 {
     private readonly ITodoService _todoService;
     private readonly ILogger<TodosController> _logger;
-
 
     /// <summary>
     /// Initializes a new instance of the TodosController
@@ -83,8 +81,6 @@ public class TodosController : ControllerBase
             // Validate consistency of pagination parameters
             parameters.ValidateConsistency();
 
-
-
             // Get paginated todos
             _logger.LogInformation(
                 "Retrieving paginated todos. Page: {PageNumber}, Size: {PageSize}",
@@ -128,10 +124,7 @@ public class TodosController : ControllerBase
                     StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred while retrieving todos"));
         }
-
-
     }
-
 
     /// <summary>
     /// Finds specific todos based on ID or title
@@ -331,6 +324,7 @@ public class TodosController : ControllerBase
                 "Getting upcoming todos for period: {Period}",
                 timePeriodDto.Period);
 
+            // Call service to get todos for specified time period
             var todos = await _todoService.GetTodosByTimePeriodAsync(timePeriodDto);
 
             return Ok(ApiResponseDto<IEnumerable<TodoDto>>.Success(
@@ -339,6 +333,7 @@ public class TodosController : ControllerBase
         }
         catch (ValidationException ex)
         {
+            // Handle validation errors (e.g. invalid date range)
             _logger.LogWarning(ex, "Validation error in GetUpcoming endpoint");
             return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
                 StatusCodes.Status400BadRequest,
@@ -397,8 +392,10 @@ public class TodosController : ControllerBase
         {
             _logger.LogInformation("Starting todo update for ID: {TodoId}", id);
 
+            // Validate model state
             if (!ModelState.IsValid)
             {
+                // Extract and format validation errors
                 var errors = ModelState.ToDictionary(
                     kvp => kvp.Key,
                     kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>()
@@ -419,6 +416,7 @@ public class TodosController : ControllerBase
         }
         catch (ValidationException ex)
         {
+            // Handle validation errors
             _logger.LogWarning(ex, "Validation error occurred during todo update");
             return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
                 StatusCodes.Status400BadRequest,
@@ -518,6 +516,7 @@ public class TodosController : ControllerBase
         {
             _logger.LogInformation("Starting todo completion update for ID: {TodoId}", id);
 
+            // Validate the model state before processing
             if (!ModelState.IsValid)
             {
                 return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
@@ -602,7 +601,8 @@ public class TodosController : ControllerBase
         try
         {
             _logger.LogInformation("Starting todo done status update for ID: {TodoId}", id);
-
+            
+            // Validate model state before processing
             if (!ModelState.IsValid)
             {
                 return BadRequest(ApiResponseDto<ValidationErrorResponse>.Failure(
@@ -657,8 +657,6 @@ public class TodosController : ControllerBase
     }
 
 }
-
-
 
 /// <summary>
 /// Response model for validation errors

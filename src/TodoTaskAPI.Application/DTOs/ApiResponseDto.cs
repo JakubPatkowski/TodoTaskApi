@@ -17,7 +17,6 @@ namespace TodoTaskAPI.Application.DTOs
         /// <summary>
         /// Response status code
         /// </summary>
-
         public static class StatusCodes
         {
             public const int Success = 200;

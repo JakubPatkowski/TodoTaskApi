@@ -31,6 +31,7 @@ namespace TodoTaskAPI.Application.DTOs
         /// </summary>
         public void ValidateParameters()
         {
+            // Ensure at least one parameter is provided (Id or Title)
             if (!Id.HasValue && string.IsNullOrWhiteSpace(Title))
             {
                 throw new TodoTaskAPI.Core.Exceptions.ValidationException(
@@ -39,14 +40,14 @@ namespace TodoTaskAPI.Application.DTOs
 
             if (!string.IsNullOrWhiteSpace(Title))
             {
-                // Dodatkowa walidacja tytułu
+                // Additional validation for the title to ensure no control or path separator characters
                 if (Title.Any(c => char.IsControl(c) || c == '/' || c == '\\'))
                 {
                     throw new TodoTaskAPI.Core.Exceptions.ValidationException(
                         "Title cannot contain control characters or path separators");
                 }
 
-                // Sprawdzanie potencjalnych XSS i SQL injection
+                // Check for potentially dangerous patterns that could lead to XSS or SQL injection
                 var dangerousPatterns = new[] { "<", ">", "script", "=", "--", "'" };
                 if (dangerousPatterns.Any(pattern => Title.Contains(pattern, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -54,7 +55,7 @@ namespace TodoTaskAPI.Application.DTOs
                         "Title contains invalid characters or potentially dangerous patterns");
                 }
 
-                // Weryfikacja wzorca regex
+                // Validate against the regex pattern
                 if (!System.Text.RegularExpressions.Regex.IsMatch(Title, ValidationConstants.TitleRegexPattern))
                 {
                     throw new TodoTaskAPI.Core.Exceptions.ValidationException(

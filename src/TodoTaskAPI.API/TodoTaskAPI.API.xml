@@ -324,10 +324,32 @@
             </summary>
             <param name="context">The current HTTP context.</param>
         </member>
+        <member name="M:TodoTaskAPI.API.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures application services
+            </summary>
+            <param name="services">Service collection to configure</param>
+        </member>
+        <member name="M:TodoTaskAPI.API.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+            Configures the HTTP request pipeline
+            </summary>
+        </member>
         <member name="T:TodoTaskAPI.API.Swagger.EnumSchemaFilter">
             <summary>
             Custom schema filter to properly display enums in Swagger
             </summary>
+        </member>
+        <member name="M:Program.Main(System.String[])">
+            <summary>
+            Main entry point - configures and runs the application
+            </summary>
+        </member>
+        <member name="M:Program.CreateHostBuilder(System.String[])">
+            <summary>
+            Creates host builder for integration tests
+            Allows tests to customize application configuration
+            </summary>s
         </member>
     </members>
 </doc>
