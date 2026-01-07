@@ -26,10 +26,10 @@ jobs:
           --health-retries 5
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
     
@@ -39,10 +39,23 @@ jobs:
     - name: Build
       run: dotnet build TodoTaskApi.sln --no-restore --configuration Release
     
-    - name: Run Unit Tests
-      run: dotnet test tests/TodoTaskAPI.UnitTests/TodoTaskAPI.UnitTests.csproj --configuration Release --no-build
+    - name: Run Unit Tests with Coverage
+      run: |
+        dotnet test tests/TodoTaskAPI.UnitTests/TodoTaskAPI.UnitTests.csproj \
+          --configuration Release \
+          --no-build \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./coverage
       
     - name: Run Integration Tests
       run: dotnet test tests/TodoTaskAPI.IntegrationTests/TodoTaskAPI.IntegrationTests.csproj --configuration Release --no-build
       env:
         ASPNETCORE_ENVIRONMENT: Testing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage/**/coverage.cobertura.xml
+        fail_ci_if_error: false
+        verbose: true

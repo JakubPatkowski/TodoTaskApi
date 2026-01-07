@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Question / Discussion
+    url: https://github.com/JakubPatkowski/TodoTaskApi/discussions/new?category=q-a
+    about: Ask questions or start a discussion (please don't open issues for questions)
+  - name: 📖 Documentation
+    url: https://github.com/JakubPatkowski/TodoTaskApi#readme
+    about: Read the documentation before opening an issue
