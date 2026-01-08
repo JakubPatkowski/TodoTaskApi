@@ -1,0 +1,106 @@
+name: Test Results Badge
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  test-and-badge:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_DB: TodoDb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore TodoTaskApi.sln 
+
+    - name: Build
+      run: dotnet build TodoTaskApi.sln --no-restore --configuration Release
+
+    - name: Run Unit Tests
+      run: |
+        dotnet test tests/TodoTaskAPI.UnitTests/TodoTaskAPI.UnitTests.csproj \
+          --configuration Release \
+          --no-build \
+          --logger "trx;LogFileName=unit-test-results.trx" \
+          --results-directory ./TestResults
+      continue-on-error: true
+      id: unit-tests
+
+    - name: Run Integration Tests
+      run: |
+        dotnet test tests/TodoTaskAPI.IntegrationTests/TodoTaskAPI.IntegrationTests.csproj \
+          --configuration Release \
+          --no-build \
+          --logger "trx;LogFileName=integration-test-results.trx" \
+          --results-directory ./TestResults
+      continue-on-error: true
+      id: integration-tests
+      env:
+        ASPNETCORE_ENVIRONMENT: Testing
+
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Test Results
+        path: './TestResults/*.trx'
+        reporter: dotnet-trx
+        fail-on-error: false
+
+    - name: Count Tests
+      id: count-tests
+      if: always()
+      run: |
+        # Parse TRX files to count tests
+        UNIT_TESTS=$(grep -oP 'total="\K[0-9]+' ./TestResults/unit-test-results.trx 2>/dev/null | head -1 || echo "0")
+        UNIT_PASSED=$(grep -oP 'passed="\K[0-9]+' ./TestResults/unit-test-results.trx 2>/dev/null | head -1 || echo "0")
+        INT_TESTS=$(grep -oP 'total="\K[0-9]+' ./TestResults/integration-test-results.trx 2>/dev/null | head -1 || echo "0")
+        INT_PASSED=$(grep -oP 'passed="\K[0-9]+' ./TestResults/integration-test-results.trx 2>/dev/null | head -1 || echo "0")
+        
+        TOTAL_TESTS=$((UNIT_TESTS + INT_TESTS))
+        TOTAL_PASSED=$((UNIT_PASSED + INT_PASSED))
+        
+        echo "unit_total=$UNIT_TESTS" >> $GITHUB_OUTPUT
+        echo "unit_passed=$UNIT_PASSED" >> $GITHUB_OUTPUT
+        echo "integration_total=$INT_TESTS" >> $GITHUB_OUTPUT
+        echo "integration_passed=$INT_PASSED" >> $GITHUB_OUTPUT
+        echo "total=$TOTAL_TESTS" >> $GITHUB_OUTPUT
+        echo "passed=$TOTAL_PASSED" >> $GITHUB_OUTPUT
+    - name: Create Test Badge
+      if: github.ref == 'refs/heads/main'
+      uses: schneegans/dynamic-badges-action@v1.7.0
+      with:
+        auth: ${{ secrets.GIST_TOKEN }}
+        gistID: 9941b745c0a92eaab3f3d696c9d9597c
+        filename: test-results.json
+        label: tests
+        message: ${{ steps.count-tests.outputs.passed }}/${{ steps.count-tests.outputs.total }} passing
+        color: ${{ steps.count-tests.outputs.passed == steps.count-tests.outputs.total && 'brightgreen' || 'yellow' }}

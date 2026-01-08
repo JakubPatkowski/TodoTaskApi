@@ -10,7 +10,15 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/github/v/release/JakubPatkowski/TodoTaskApi)](https://github.com/JakubPatkowski/TodoTaskApi/releases)
 
+## 📊 Code Coverage
+
+[![Codecov Tree](https://codecov.io/gh/JakubPatkowski/TodoTaskApi/graphs/tree.svg?token=YOUR_TOKEN)](https://codecov.io/gh/JakubPatkowski/TodoTaskApi)
+
+![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/JakubPatkowski/9941b745c0a92eaab3f3d696c9d9597c/raw/86c00e1cea642a6ddd7539eed2ec24f903fb8867/test_results.json)
+
 > Production-ready REST API for todo management built with .NET 8, Clean Architecture, Testcontainers, Docker, and comprehensive testing.
+
+##  Screenshoots
 
 ![Swagger Get](docs/images/todo_swagger_get.png)
 Frontend Main Page
