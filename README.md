@@ -4,21 +4,22 @@
 [![codecov](https://codecov.io/gh/JakubPatkowski/TodoTaskApi/branch/main/graph/badge.svg)](https://codecov.io/gh/JakubPatkowski/TodoTaskApi)
 [![CodeQL](https://github.com/JakubPatkowski/TodoTaskApi/actions/workflows/codeql.yml/badge.svg)](https://github.com/JakubPatkowski/TodoTaskApi/actions/workflows/codeql.yml)
 [![Docker](https://github.com/JakubPatkowski/TodoTaskApi/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/JakubPatkowski/TodoTaskApi/actions/workflows/docker-publish.yml)
-[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/JakubPatkowski/9941b745c0a92eaab3f3d696c9d9597c/raw/74fbc77df59c5b3890c50e346bc8ff4c5af5613b/test-results.json)
+
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/github/v/release/JakubPatkowski/TodoTaskApi)](https://github.com/JakubPatkowski/TodoTaskApi/releases)
+
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
 ## 📊 Code Coverage
 
 [![Codecov Tree](https://codecov.io/gh/JakubPatkowski/TodoTaskApi/graphs/tree.svg?token=YOUR_TOKEN)](https://codecov.io/gh/JakubPatkowski/TodoTaskApi)
 
-![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/JakubPatkowski/9941b745c0a92eaab3f3d696c9d9597c/raw/74fbc77df59c5b3890c50e346bc8ff4c5af5613b/test-results.json)
-
 > Production-ready REST API for todo management built with .NET 8, Clean Architecture, Testcontainers, Docker, and comprehensive testing.
 
-##  Screenshoots
+## 📸 Screenshoots
 
 ![Swagger Get](docs/images/todo_swagger_get.png)
 Frontend Main Page
