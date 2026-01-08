@@ -155,7 +155,7 @@ public class TodosController : ControllerBase
         try
         {
             _logger.LogInformation("Starting todo search with parameters: ID: {Id}",
-                parameters.Id);
+                LogSanitizer.Sanitize(parameters.Id));
 
             // Call the FindTodosAsync method in the TodoService to retrieve the matching todos
             var todos = await _todoService.FindTodosAsync(parameters);

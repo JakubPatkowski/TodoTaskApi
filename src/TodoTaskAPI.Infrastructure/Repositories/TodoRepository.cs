@@ -1,10 +1,10 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TodoTaskAPI.Core.Entities;
 using TodoTaskAPI.Core.Interfaces;
 using TodoTaskAPI.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 using TodoTaskAPI.Core.Exceptions;
+using TodoTaskAPI.Core.Helpers;
 
 namespace TodoTaskAPI.Infrastructure.Repositories;
 
@@ -80,7 +80,7 @@ public class TodoRepository : ITodoRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while searching for todos. ID: {Id}", id);
+            _logger.LogError(ex, "Error occurred while searching for todos. ID: {Id}", LogSanitizer.Sanitize(id));
             throw;
         }
     }
