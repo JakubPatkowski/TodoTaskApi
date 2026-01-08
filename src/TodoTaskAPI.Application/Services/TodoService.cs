@@ -117,7 +117,7 @@ public class TodoService : ITodoService
         try
         {
             _logger.LogInformation("Starting todo search with parameters: ID: {Id}",
-                parameters.Id);
+                LogSanitizer.Sanitize(parameters.Id));
 
             // Validate parameters
             parameters.ValidateParameters();

@@ -64,8 +64,8 @@ namespace TodoTaskAPI.API.Middleware
                 // Log the response details, including the elapsed time.
                 _logger.LogInformation(
                      "Request {Method} {Path} completed in {ElapsedMilliseconds}ms with status code {StatusCode}",
-                     context.Request.Method,
-                     context.Request.Path,
+                     LogSanitizer.Sanitize(context.Request.Method),
+                     LogSanitizer.Sanitize(context.Request.Path),
                      stopwatch.ElapsedMilliseconds,
                      context.Response.StatusCode);
             }
