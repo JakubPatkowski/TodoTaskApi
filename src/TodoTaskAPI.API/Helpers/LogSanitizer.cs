@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Diagnostics;
+using TodoTaskAPI.API.Helpers;
 
 namespace TodoTaskAPI.API.Middleware
 {
@@ -46,25 +47,25 @@ namespace TodoTaskAPI.API.Middleware
                     context.Request.Body.Position = 0;
                 }
 
-                // Log request details
+                // FIXED: Sanitize all user-provided data before logging
                 _logger.LogInformation(
-                    "Request {Method} {Path} started at {Time}. Query: {Query}. Body: {Body}",
-                    LogSanitizer.Sanitize(context.Request.Method),
-                    LogSanitizer.Sanitize(context.Request.Path),
+                    "Request {Method} {Path} started at {Time}. Query: {Query}. BodyLength: {BodyLength}",
+                    context.Request.Method,
+                    LogSanitizer.Sanitize(context.Request.Path.Value),
                     DateTime.UtcNow,
-                    LogSanitizer.Sanitize(context.Request.QueryString),
-                    LogSanitizer.Sanitize(requestBody));
+                    LogSanitizer.Sanitize(context.Request.QueryString.Value),
+                    requestBody.Length);  // Log length instead of actual body content
 
                 // Pass control to the next middleware in the pipeline.
                 await _next(context);
 
                 stopwatch.Stop();
 
-                // Log the response details, including the elapsed time.
+                // FIXED: Sanitize path in response logging
                 _logger.LogInformation(
                      "Request {Method} {Path} completed in {ElapsedMilliseconds}ms with status code {StatusCode}",
                      context.Request.Method,
-                     context.Request.Path,
+                     LogSanitizer.Sanitize(context.Request.Path.Value),
                      stopwatch.ElapsedMilliseconds,
                      context.Response.StatusCode);
             }
@@ -72,12 +73,12 @@ namespace TodoTaskAPI.API.Middleware
             {
                 stopwatch.Stop();
 
-                // Log the exception and the time it took before failure.
+                // FIXED: Sanitize path in error logging
                 _logger.LogError(
                     ex,
                     "Request {Method} {Path} failed after {ElapsedMilliseconds}ms",
-                    LogSanitizer.Sanitize(context.Request.Method),
-                    LogSanitizer.Sanitize(context.Request.Path),
+                    context.Request.Method,
+                    LogSanitizer.Sanitize(context.Request.Path.Value),
                     stopwatch.ElapsedMilliseconds);
                 throw;   // Re-throw the exception to propagate it up the middleware pipeline.
             }

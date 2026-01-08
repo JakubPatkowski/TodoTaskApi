@@ -27,15 +27,15 @@ namespace TodoTaskAPI.IntegrationTests.Infrastructure
 
                     logger.LogInformation(
                         "Processing request: {Method} {Path}",
-                        context.Request.Method,
-                        context.Request.Path);
+                        LogSanitizer.Sanitize(context.Request.Method),
+                        LogSanitizer.Sanitize(context.Request.Path));
 
                     await nextMiddleware();
 
                     logger.LogInformation(
                         "Completed request: {Method} {Path} - Status: {StatusCode}",
-                        context.Request.Method,
-                        context.Request.Path,
+                        LogSanitizer.Sanitize(context.Request.Method),
+                        LogSanitizer.Sanitize(context.Request.Path),
                         context.Response.StatusCode);
                 });
 

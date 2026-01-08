@@ -1,6 +1,8 @@
 # Release Drafter Configuration
 # https://github.com/release-drafter/release-drafter
 
+commitish: main
+
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 

@@ -1,0 +1,12 @@
+name: 🔧 Fix
+description: Fixed a bug
+title: "[FIX]: "
+labels: ["fix"]
+body:
+  - type: textarea
+    id: bug
+    attributes:
+      label: What needs to be fixed?
+      placeholder: Describe the problem briefly
+    validations:
+      required: true

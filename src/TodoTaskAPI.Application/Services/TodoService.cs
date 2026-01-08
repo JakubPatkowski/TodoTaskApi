@@ -115,8 +115,8 @@ public class TodoService : ITodoService
     {
         try
         {
-            _logger.LogInformation("Starting todo search with parameters: ID: {Id}, Title: {Title}",
-                parameters.Id, parameters.Title);
+            _logger.LogInformation("Starting todo search with parameters: ID: {Id}",
+                parameters.Id);
 
             // Validate parameters
             parameters.ValidateParameters();
@@ -143,7 +143,7 @@ public class TodoService : ITodoService
     {
         try
         {
-            _logger.LogInformation("Starting business validation for todo: {Title}", createTodoDto.Title);
+            _logger.LogInformation("Starting business validation for todo: {Title}", LogSanitizer.Sanitize(parameters.Title));
 
             // Perform business validation
             var validationErrors = ValidateBusinessRules(createTodoDto);
@@ -164,7 +164,7 @@ public class TodoService : ITodoService
                 IsDone = false
             };
 
-            _logger.LogInformation("Attempting to save todo to database: {Title}", todo.Title);
+            _logger.LogInformation("Attempting to save todo to database: {Id}", todo.Id);
             var createdTodo = await _todoRepository.AddAsync(todo);
             _logger.LogInformation("Successfully created new todo with ID: {TodoId}", createdTodo.Id);
 
@@ -177,7 +177,7 @@ public class TodoService : ITodoService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while creating todo: {Title}", createTodoDto.Title);
+            _logger.LogError(ex, "Error occurred while creating todo: {Id}", todo.Id);
             throw;
         }
     }

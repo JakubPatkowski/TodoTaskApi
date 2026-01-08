@@ -155,8 +155,8 @@ public class TodosController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Starting todo search with parameters: ID: {Id}, Title: {Title}",
-                parameters.Id, parameters.Title);
+            _logger.LogInformation("Starting todo search with parameters: ID: {Id}",
+                parameters.Id);
 
             // Call the FindTodosAsync method in the TodoService to retrieve the matching todos
             var todos = await _todoService.FindTodosAsync(parameters);
@@ -233,7 +233,7 @@ public class TodosController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Starting todo creation process for title: {Title}", createTodoDto.Title);
+            _logger.LogInformation("Starting todo creation process for title: {Title}", LogSanitizer.Sanitize(parameters.Title));
 
             // Model state validation block - validates incoming DTO against data annotations
             if (!ModelState.IsValid)

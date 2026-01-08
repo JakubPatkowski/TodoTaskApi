@@ -80,7 +80,7 @@ public class TodoRepository : ITodoRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while searching for todos. ID: {Id}, Title: {Title}", id, title);
+            _logger.LogError(ex, "Error occurred while searching for todos. ID: {Id}", id);
             throw;
         }
     }
