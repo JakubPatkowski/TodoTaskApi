@@ -14,7 +14,7 @@
 
 [![Codecov Tree](https://codecov.io/gh/JakubPatkowski/TodoTaskApi/graphs/tree.svg?token=YOUR_TOKEN)](https://codecov.io/gh/JakubPatkowski/TodoTaskApi)
 
-![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/JakubPatkowski/9941b745c0a92eaab3f3d696c9d9597c/raw/86c00e1cea642a6ddd7539eed2ec24f903fb8867/test_results.json)
+![Tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/JakubPatkowski/9941b745c0a92eaab3f3d696c9d9597c/raw/74fbc77df59c5b3890c50e346bc8ff4c5af5613b/test-results.json)
 
 > Production-ready REST API for todo management built with .NET 8, Clean Architecture, Testcontainers, Docker, and comprehensive testing.
 
