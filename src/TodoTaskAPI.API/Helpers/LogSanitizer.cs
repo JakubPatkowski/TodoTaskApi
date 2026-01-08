@@ -1,87 +1,51 @@
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Diagnostics;
-using TodoTaskAPI.API.Helpers;
+using CoreLogSanitizer = TodoTaskAPI.Core.Helpers.LogSanitizer;
 
-namespace TodoTaskAPI.API.Middleware
+namespace TodoTaskAPI.API.Helpers
 {
     /// <summary>
-    /// Middleware for logging details of each HTTP request and its response.
-    /// Provides insights into request duration, request data, and response status.
+    /// API-specific log sanitizer that extends Core functionality with ASP.NET Core types.
+    /// Provides sanitization for PathString, QueryString and other HTTP-specific types.
     /// </summary>
-    public class RequestLoggingMiddleware
+    public static class LogSanitizer
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<RequestLoggingMiddleware> _logger;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="RequestLoggingMiddleware"/> class.
+        /// Sanitizes a string value for safe logging.
         /// </summary>
-        /// <param name="next">The next middleware in the HTTP request pipeline.</param>
-        /// <param name="logger">Logger instance for capturing request details.</param>
-        public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
+        /// <param name="value">The string value to sanitize</param>
+        /// <returns>A sanitized string safe for logging</returns>
+        public static string Sanitize(string? value)
         {
-            _next = next;
-            _logger = logger;
+            return CoreLogSanitizer.Sanitize(value);
         }
 
         /// <summary>
-        /// Middleware entry point, called for each HTTP request.
-        /// Logs request details and measures the time taken to process the request.
+        /// Sanitizes an ASP.NET Core PathString for safe logging.
         /// </summary>
-        /// <param name="context">The current HTTP context.</param>
-        public async Task InvokeAsync(HttpContext context)
+        /// <param name="path">The PathString to sanitize</param>
+        /// <returns>A sanitized string representation of the path</returns>
+        public static string Sanitize(PathString path)
         {
-            var stopwatch = Stopwatch.StartNew();
+            return CoreLogSanitizer.Sanitize(path.Value);
+        }
 
-            try
-            {
-                var requestBody = "";
+        /// <summary>
+        /// Sanitizes an ASP.NET Core QueryString for safe logging.
+        /// </summary>
+        /// <param name="query">The QueryString to sanitize</param>
+        /// <returns>A sanitized string representation of the query</returns>
+        public static string Sanitize(QueryString query)
+        {
+            return CoreLogSanitizer.Sanitize(query.Value);
+        }
 
-                // Only read the body for non-GET requests to avoid performance impact
-                if(!context.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
-                {
-                    context.Request.EnableBuffering();
-                    using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
-                    requestBody = await reader.ReadToEndAsync();
-                    context.Request.Body.Position = 0;
-                }
-
-                // FIXED: Sanitize all user-provided data before logging
-                _logger.LogInformation(
-                    "Request {Method} {Path} started at {Time}. Query: {Query}. BodyLength: {BodyLength}",
-                    context.Request.Method,
-                    LogSanitizer.Sanitize(context.Request.Path.Value),
-                    DateTime.UtcNow,
-                    LogSanitizer.Sanitize(context.Request.QueryString.Value),
-                    requestBody.Length);  // Log length instead of actual body content
-
-                // Pass control to the next middleware in the pipeline.
-                await _next(context);
-
-                stopwatch.Stop();
-
-                // FIXED: Sanitize path in response logging
-                _logger.LogInformation(
-                     "Request {Method} {Path} completed in {ElapsedMilliseconds}ms with status code {StatusCode}",
-                     context.Request.Method,
-                     LogSanitizer.Sanitize(context.Request.Path.Value),
-                     stopwatch.ElapsedMilliseconds,
-                     context.Response.StatusCode);
-            }
-            catch (Exception ex)
-            {
-                stopwatch.Stop();
-
-                // FIXED: Sanitize path in error logging
-                _logger.LogError(
-                    ex,
-                    "Request {Method} {Path} failed after {ElapsedMilliseconds}ms",
-                    context.Request.Method,
-                    LogSanitizer.Sanitize(context.Request.Path.Value),
-                    stopwatch.ElapsedMilliseconds);
-                throw;   // Re-throw the exception to propagate it up the middleware pipeline.
-            }
+        /// <summary>
+        /// Sanitizes an object for safe logging.
+        /// </summary>
+        /// <param name="value">The object to sanitize</param>
+        /// <returns>A sanitized string representation</returns>
+        public static string Sanitize(object? value)
+        {
+            return CoreLogSanitizer.Sanitize(value);
         }
     }
 }

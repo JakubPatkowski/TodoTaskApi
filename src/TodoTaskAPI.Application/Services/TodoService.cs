@@ -9,6 +9,7 @@ using TodoTaskAPI.Core.Entities;
 using TodoTaskAPI.Core.Exceptions;
 using TodoTaskAPI.Core.Interfaces;
 using Microsoft.Extensions.Logging;
+using TodoTaskAPI.Core.Helpers;
 
 namespace TodoTaskAPI.Application.Services;
 
@@ -143,7 +144,7 @@ public class TodoService : ITodoService
     {
         try
         {
-            _logger.LogInformation("Starting business validation for todo: {Title}", LogSanitizer.Sanitize(parameters.Title));
+            _logger.LogInformation("Starting business validation for todo: {Title}", LogSanitizer.Sanitize(createTodoDto.Title));
 
             // Perform business validation
             var validationErrors = ValidateBusinessRules(createTodoDto);
@@ -177,7 +178,7 @@ public class TodoService : ITodoService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while creating todo: {Id}", todo.Id);
+            _logger.LogError(ex, "Error occurred while creating todo, error: {Error}", ex.Message );
             throw;
         }
     }

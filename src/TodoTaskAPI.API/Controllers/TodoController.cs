@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+using TodoTaskAPI.API.Helpers;
 using TodoTaskAPI.Application.DTOs;
 using TodoTaskAPI.Application.Interfaces;
 using TodoTaskAPI.Core.Exceptions;
@@ -233,7 +232,7 @@ public class TodosController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Starting todo creation process for title: {Title}", LogSanitizer.Sanitize(parameters.Title));
+            _logger.LogInformation("Starting todo creation process for title: {Title}", LogSanitizer.Sanitize(createTodoDto.Title));
 
             // Model state validation block - validates incoming DTO against data annotations
             if (!ModelState.IsValid)
