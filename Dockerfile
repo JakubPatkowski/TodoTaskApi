@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 # Copy project files first to optimize build cache
 COPY ["src/TodoTaskAPI.API/TodoTaskAPI.API.csproj", "src/TodoTaskAPI.API/"]
