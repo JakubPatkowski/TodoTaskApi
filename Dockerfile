@@ -15,7 +15,7 @@ FROM build AS publish
 # Publish with explicit output path
 RUN dotnet publish "src/TodoTaskAPI.API/TodoTaskAPI.API.csproj" -c Release -o /app/publish /p:GenerateDocumentationFile=true
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 # Copy everything from publish folder
 COPY --from=publish /app/publish .
